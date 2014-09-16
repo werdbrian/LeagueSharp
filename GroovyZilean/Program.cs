@@ -39,7 +39,7 @@ namespace GroovyZilean
             Q = new Spell(SpellSlot.Q, 700);
             W = new Spell(SpellSlot.W);
             E = new Spell(SpellSlot.E, 700);
-            R = new Spell(SpellSlot.R);
+            R = new Spell(SpellSlot.R, 900);
             spellList.AddRange(new []{Q, E});
 
             // Create menu
@@ -50,7 +50,7 @@ namespace GroovyZilean
             Drawing.OnDraw += Drawing_OnDraw;
 
             // Print
-            Game.PrintChat("GroovyZilean by blacky has been loaded.");
+            Game.PrintChat(String.Format("<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>{0} Loaded!</font>", champName));
         }
 
         private static void Drawing_OnDraw(EventArgs args)
@@ -74,6 +74,10 @@ namespace GroovyZilean
             // Harass
             if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active)
                 OnHarass();
+
+             // AutoUlt
+             if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>()) 
+             AutoUlt();
 
         }
 
@@ -123,6 +127,21 @@ namespace GroovyZilean
             }
         }
 
+        private static void AutoUlt()
+        {
+            if (menu.Item("ultUseR").GetValue<bool>())
+            {
+                foreach (Obj_AI_Hero AChamp in ObjectManager.Get<Obj_AI_Hero>())
+                    if ((AChamp.IsAlly) && (ObjectManager.Player.ServerPosition.Distance(AChamp.Position) < R.Range))
+                    if (menu.Item("Ult" + AChamp.BaseSkinName).GetValue<bool>() && R.IsReady())
+                    if (AChamp.Health < (AChamp.MaxHealth * (menu.Item("ultPercent").GetValue<Slider>().Value * 0.01)))
+                    if ((!AChamp.IsDead) && (!AChamp.IsInvulnerable))
+                                {
+                                    R.CastOnUnit(AChamp, false);
+                                }
+            }
+        }
+
         private static void createMenu()
         {
             menu = new Menu("Groovy" + champName, "groovy" + champName, true);
@@ -152,10 +171,20 @@ namespace GroovyZilean
             harass.AddItem(new MenuItem("harassUseW",   "Use W").SetValue(false));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
 
+            // Ult
+            Menu ult = new Menu("Ult", "ult");
+            menu.AddSubMenu(ult);
+            ult.AddItem(new MenuItem("ultUseR", "Use R")).SetValue(true);
+            foreach (Obj_AI_Hero Champ in ObjectManager.Get<Obj_AI_Hero>())
+                if (Champ.IsAlly)
+            ult.AddItem(new MenuItem("Ult" + Champ.BaseSkinName, string.Format("Ult {0}", Champ.BaseSkinName)).SetValue(true));
+            ult.AddItem(new MenuItem("ultPercent", "R at % HP")).SetValue(new Slider(10, 1, 100));
+
             // Drawings
             Menu drawings = new Menu("Drawings", "drawings");
             menu.AddSubMenu(drawings);
             drawings.AddItem(new MenuItem("drawRangeQ",     "Q range").SetValue(new Circle(true, Color.FromArgb(150, Color.DarkRed))));
+            drawings.AddItem(new MenuItem("drawRangeR",     "R range").SetValue(new Circle(true, Color.FromArgb(150, Color.Gold))));
 
             // Finalizing
             menu.AddToMainMenu();
