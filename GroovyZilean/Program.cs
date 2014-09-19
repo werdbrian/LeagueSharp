@@ -40,7 +40,7 @@ namespace GroovyZilean
             W = new Spell(SpellSlot.W);
             E = new Spell(SpellSlot.E, 700);
             R = new Spell(SpellSlot.R, 900);
-            spellList.AddRange(new []{Q, E});
+            spellList.AddRange(new []{Q, E, R});
 
             // Create menu
             createMenu();
@@ -72,12 +72,14 @@ namespace GroovyZilean
                 OnCombo();
 
             // Harass
-            if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active)
+            if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active && 
+               (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) >
+                menu.Item("harassMana").GetValue<Slider>().Value)
                 OnHarass();
 
-             // AutoUlt
-             if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>()) 
-             AutoUlt();
+            // AutoUlt
+            if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>()) 
+                AutoUlt();
 
         }
 
@@ -169,6 +171,7 @@ namespace GroovyZilean
             menu.AddSubMenu(harass);
             harass.AddItem(new MenuItem("harassUseQ",   "Use Q").SetValue(true));
             harass.AddItem(new MenuItem("harassUseW",   "Use W").SetValue(false));
+            harass.AddItem(new MenuItem("harassMana", "Mana To Harass").SetValue(new Slider(40, 100, 0)));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
 
             // Ult
