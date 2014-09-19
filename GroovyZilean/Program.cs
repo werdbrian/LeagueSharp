@@ -78,7 +78,7 @@ namespace GroovyZilean
                 OnHarass();
 
             // AutoUlt
-            if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>()) 
+            if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>())
                 AutoUlt();
 
         }
@@ -181,13 +181,12 @@ namespace GroovyZilean
             foreach (Obj_AI_Hero Champ in ObjectManager.Get<Obj_AI_Hero>())
                 if (Champ.IsAlly)
             ult.AddItem(new MenuItem("Ult" + Champ.BaseSkinName, string.Format("Ult {0}", Champ.BaseSkinName)).SetValue(true));
-            ult.AddItem(new MenuItem("ultPercent", "R at % HP")).SetValue(new Slider(10, 1, 100));
+            ult.AddItem(new MenuItem("ultPercent", "R at % HP")).SetValue(new Slider(25, 1, 100));
 
             // Drawings
             Menu drawings = new Menu("Drawings", "drawings");
             menu.AddSubMenu(drawings);
             drawings.AddItem(new MenuItem("drawRangeQ",     "Q range").SetValue(new Circle(true, Color.FromArgb(150, Color.DarkRed))));
-            drawings.AddItem(new MenuItem("drawRangeR",     "R range").SetValue(new Circle(true, Color.FromArgb(150, Color.Gold))));
 
             // Finalizing
             menu.AddToMainMenu();
