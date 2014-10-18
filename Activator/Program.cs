@@ -28,7 +28,7 @@ namespace Activator
             AutoExhaust.AddToMenu(Config.Menu);
 
             //Auto Ignite
-            //AutoIgnite.AddToMenu(Config.Menu);
+            AutoIgnite.AddToMenu(Config.Menu);
            
             Config.Menu.AddToMainMenu();
 
