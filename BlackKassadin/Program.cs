@@ -50,8 +50,8 @@ namespace BlackKassadin
 
             // Finetune spells
             Q.SetTargetted(0.5f, 1400f);
-            E.SetSkillshot(0.5f, float.MaxValue, float.MaxValue, false, SkillshotType.SkillshotCone);
-            R.SetSkillshot(0.5f, float.MaxValue, float.MaxValue, false, SkillshotType.SkillshotCircle);
+            E.SetSkillshot(0.5f, 10f, float.MaxValue, false, SkillshotType.SkillshotCone);
+            R.SetSkillshot(0.5f, 150f, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
             // Create menu
             createMenu();
@@ -102,6 +102,8 @@ namespace BlackKassadin
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
             bool useR = comboMenu.Item("comboUseR").GetValue<bool>() && R.IsReady();
 
+            var Target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+
             if (useR)
             {
                 var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
@@ -128,6 +130,15 @@ namespace BlackKassadin
                 var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     E.Cast(target, packets());
+            }
+
+            if (Target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
+            player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            {
+                if (GetComboDamage(Target) > Target.Health)
+                {
+                    player.SummonerSpellbook.CastSpell(IgniteSlot, Target);
+                }
             }
         }
 
@@ -189,7 +200,7 @@ namespace BlackKassadin
 
         private static bool packets()
         {
-            return menu.Item("packet").GetValue<bool>();
+            return menu.Item("miscPacket").GetValue<bool>();
         }
 
         private static void createMenu()
@@ -226,7 +237,9 @@ namespace BlackKassadin
             // Misc
             Menu misc = new Menu("Misc", "misc");
             menu.AddSubMenu(misc);
-            misc.AddItem(new MenuItem("packet", "Use Packets").SetValue(true));
+            misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
+            misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
+            //misc.AddItem(new MenuItem("miscDFG", "Use DFG").SetValue(true));
             misc.AddItem(new MenuItem("miscUltToMouse", "Ult to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
 
 
