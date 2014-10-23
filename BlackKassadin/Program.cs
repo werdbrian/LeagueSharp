@@ -146,7 +146,7 @@ namespace BlackKassadin
         {
             Menu harassMenu = menu.SubMenu("harass");
             bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
-            bool useE = harassMenu.Item("harassUseE").GetValue<bool>() && W.IsReady();
+            bool useE = harassMenu.Item("harassUseE").GetValue<bool>() && E.IsReady();
 
             if (useQ)
             {
@@ -166,10 +166,17 @@ namespace BlackKassadin
         private static void UltToMouse()
         {
             Menu miscMenu = menu.SubMenu("misc");
+            bool useR = miscMenu.Item("miscUseR").GetValue<bool>() && R.IsReady();
 
+            if (useR)
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
                 R.Cast(Game.CursorPos, packets());
+            }
+
+            else
+            {
+                Orbwalking.Orbwalk(null, Game.CursorPos);
             }
         }
 
@@ -240,6 +247,7 @@ namespace BlackKassadin
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
             //misc.AddItem(new MenuItem("miscDFG", "Use DFG").SetValue(true));
             misc.AddItem(new MenuItem("miscUltToMouse", "Ult to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
+            misc.AddItem(new MenuItem("miscUseR", "Use R in Ult to mouse").SetValue(true));
 
 
             //Damage after combo:
