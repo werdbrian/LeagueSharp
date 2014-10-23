@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GroovyZilean")]
+[assembly: AssemblyTitle("BlackZilean")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("GroovyZilean")]
+[assembly: AssemblyProduct("BlackZilean")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a2e3fd16-f6a4-459e-8798-57c34512cd4e")]
+[assembly: Guid("495fc93b-f9dc-405f-b114-e73a00077302")]
 
 // Version information for an assembly consists of the following four values:
 //

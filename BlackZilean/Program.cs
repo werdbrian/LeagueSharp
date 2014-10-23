@@ -7,8 +7,8 @@ using LeagueSharp.Common;
 using SharpDX;
 using Color = System.Drawing.Color;
 
-namespace GroovyZilean
-{ 
+namespace BlackZilean
+{
     class Program
     {
         // Generic
@@ -18,10 +18,12 @@ namespace GroovyZilean
         // Spells
         private static readonly List<Spell> spellList = new List<Spell>();
         private static Spell Q, W, E, R;
-        
+        private static SpellSlot IgniteSlot;
+        private static Items.Item DFG;
+
         // Menu
         public static Menu menu;
-        
+
         private static Orbwalking.Orbwalker OW;
 
         public static void Main(string[] args)
@@ -40,7 +42,11 @@ namespace GroovyZilean
             W = new Spell(SpellSlot.W);
             E = new Spell(SpellSlot.E, 700);
             R = new Spell(SpellSlot.R, 900);
-            spellList.AddRange(new []{Q, E, R});
+            spellList.AddRange(new[] { Q, E, R });
+
+            IgniteSlot = player.GetSpellSlot("SummonerDot");
+
+            DFG = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3188, 750) : new Items.Item(3128, 750);
 
             // Create menu
             createMenu();
@@ -72,7 +78,7 @@ namespace GroovyZilean
                 OnCombo();
 
             // Harass
-            if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active && 
+            if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
                (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) >
                 menu.Item("harassMana").GetValue<Slider>().Value)
                 OnHarass();
@@ -80,6 +86,10 @@ namespace GroovyZilean
             // AutoUlt
             if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>())
                 AutoUlt();
+
+            // Misc
+            if (menu.SubMenu("misc").Item("miscFleeToMouse").GetValue<KeyBind>().Active)
+                FleeToMouse();
 
         }
 
@@ -90,11 +100,13 @@ namespace GroovyZilean
             bool useW = comboMenu.Item("comboUseW").GetValue<bool>() && W.IsReady();
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
 
+            var Target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+
             if (useQ)
             {
                 var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
-                    Q.Cast(target);
+                    Q.Cast(target, packets());
             }
 
             if (useW && !useQ)
@@ -106,7 +118,16 @@ namespace GroovyZilean
             {
                 var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
-                    E.Cast(target);
+                    E.Cast(target, packets());
+            }
+
+            if (Target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
+            player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            {
+                if (GetComboDamage(Target) > Target.Health)
+                {
+                    player.SummonerSpellbook.CastSpell(IgniteSlot, Target);
+                }
             }
         }
 
@@ -120,7 +141,7 @@ namespace GroovyZilean
             {
                 var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
-                    Q.Cast(target);
+                    Q.Cast(target, packets());
             }
 
             if (useW && !useQ)
@@ -135,18 +156,54 @@ namespace GroovyZilean
             {
                 foreach (Obj_AI_Hero AChamp in ObjectManager.Get<Obj_AI_Hero>())
                     if ((AChamp.IsAlly) && (ObjectManager.Player.ServerPosition.Distance(AChamp.Position) < R.Range))
-                    if (menu.Item("Ult" + AChamp.BaseSkinName).GetValue<bool>() && R.IsReady())
-                    if (AChamp.Health < (AChamp.MaxHealth * (menu.Item("ultPercent").GetValue<Slider>().Value * 0.01)))
-                    if ((!AChamp.IsDead) && (!AChamp.IsInvulnerable))
+                        if (menu.Item("Ult" + AChamp.BaseSkinName).GetValue<bool>() && R.IsReady())
+                            if (AChamp.Health < (AChamp.MaxHealth * (menu.Item("ultPercent").GetValue<Slider>().Value * 0.01)))
+                                if ((!AChamp.IsDead) && (!AChamp.IsInvulnerable))
                                 {
-                                    R.CastOnUnit(AChamp, false);
+                                    R.CastOnUnit(AChamp, packets());
                                 }
             }
         }
 
+        private static void FleeToMouse()
+        {
+            Menu miscMenu = menu.SubMenu("misc");
+
+            {
+                Orbwalking.Orbwalk(null, Game.CursorPos);
+                E.Cast(player, packets());
+            }
+        }
+
+        private static float GetComboDamage(Obj_AI_Base enemy)
+        {
+            var damage = 0d;
+            if (Q.IsReady())
+                damage += player.GetSpellDamage(enemy, SpellSlot.Q);
+
+            if (DFG.IsReady())
+                damage += player.GetItemDamage(enemy, Damage.DamageItems.Dfg) / 1.2;
+
+            if (W.IsReady())
+                damage += player.GetSpellDamage(enemy, SpellSlot.W);
+
+            if (Q.IsReady())
+                damage += player.GetSpellDamage(enemy, SpellSlot.Q);
+
+            if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+                damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
+
+            return (float)damage * (DFG.IsReady() ? 1.2f : 1);
+        }
+
+        private static bool packets()
+        {
+            return menu.Item("miscPacket").GetValue<bool>();
+        }
+
         private static void createMenu()
         {
-            menu = new Menu("Groovy" + champName, "groovy" + champName, true);
+            menu = new Menu("Black" + champName, "black" + champName, true);
 
             // Target selector
             Menu ts = new Menu("Target Selector", "ts");
@@ -161,16 +218,16 @@ namespace GroovyZilean
             // Combo
             Menu combo = new Menu("Combo", "combo");
             menu.AddSubMenu(combo);
-            combo.AddItem(new MenuItem("comboUseQ",         "Use Q").SetValue(true));
-            combo.AddItem(new MenuItem("comboUseW",         "Use W").SetValue(true));
-            combo.AddItem(new MenuItem("comboUseE",         "Use E").SetValue(true));
-            combo.AddItem(new MenuItem("comboActive",       "Combo active!").SetValue(new KeyBind(32, KeyBindType.Press)));
+            combo.AddItem(new MenuItem("comboUseQ", "Use Q").SetValue(true));
+            combo.AddItem(new MenuItem("comboUseW", "Use W").SetValue(true));
+            combo.AddItem(new MenuItem("comboUseE", "Use E").SetValue(true));
+            combo.AddItem(new MenuItem("comboActive", "Combo active!").SetValue(new KeyBind(32, KeyBindType.Press)));
 
             // Harass
             Menu harass = new Menu("Harass", "harass");
             menu.AddSubMenu(harass);
-            harass.AddItem(new MenuItem("harassUseQ",   "Use Q").SetValue(true));
-            harass.AddItem(new MenuItem("harassUseW",   "Use W").SetValue(false));
+            harass.AddItem(new MenuItem("harassUseQ", "Use Q").SetValue(true));
+            harass.AddItem(new MenuItem("harassUseW", "Use W").SetValue(false));
             harass.AddItem(new MenuItem("harassMana", "Mana To Harass").SetValue(new Slider(40, 100, 0)));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
 
@@ -180,13 +237,33 @@ namespace GroovyZilean
             ult.AddItem(new MenuItem("ultUseR", "Use R")).SetValue(true);
             foreach (Obj_AI_Hero Champ in ObjectManager.Get<Obj_AI_Hero>())
                 if (Champ.IsAlly)
-            ult.AddItem(new MenuItem("Ult" + Champ.BaseSkinName, string.Format("Ult {0}", Champ.BaseSkinName)).SetValue(true));
+                    ult.AddItem(new MenuItem("Ult" + Champ.BaseSkinName, string.Format("Ult {0}", Champ.BaseSkinName)).SetValue(true));
             ult.AddItem(new MenuItem("ultPercent", "R at % HP")).SetValue(new Slider(25, 1, 100));
+
+            // Misc
+            Menu misc = new Menu("Misc", "misc");
+            menu.AddSubMenu(misc);
+            misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
+            misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
+            //misc.AddItem(new MenuItem("miscDFG", "Use DFG").SetValue(true));
+            misc.AddItem(new MenuItem("miscFleeToMouse", "Flee to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
+
+            //Damage after combo:
+            var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
+            Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
+            Utility.HpBarDamageIndicator.Enabled = dmgAfterComboItem.GetValue<bool>();
+            dmgAfterComboItem.ValueChanged += delegate(object sender, OnValueChangeEventArgs eventArgs)
+            {
+                Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+            };
 
             // Drawings
             Menu drawings = new Menu("Drawings", "drawings");
             menu.AddSubMenu(drawings);
-            drawings.AddItem(new MenuItem("drawRangeQ",     "Q range").SetValue(new Circle(true, Color.FromArgb(150, Color.DarkRed))));
+            drawings.AddItem(new MenuItem("drawRangeQ", "Q range").SetValue(new Circle(true, Color.Aquamarine)));
+            drawings.AddItem(new MenuItem("drawRangeE", "E range").SetValue(new Circle(false, Color.Aquamarine)));
+            drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
+            drawings.AddItem(dmgAfterComboItem);
 
             // Finalizing
             menu.AddToMainMenu();

@@ -166,7 +166,6 @@ namespace BlackKassadin
         private static void UltToMouse()
         {
             Menu miscMenu = menu.SubMenu("misc");
-            bool useR = R.IsReady();
 
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
