@@ -8,8 +8,6 @@ BlackZilean
 
 Simple Zilean assembly.
 
--Missing Waveclear
-
 
 Credits:
 Took Hellsing's assemblys as a base. pls no be maderino at me for that.
@@ -19,8 +17,6 @@ BlackKassadin
 ===========
 
 Simple Kassdin assembly.
-
--Missing Farm
 
 
 Credits:
