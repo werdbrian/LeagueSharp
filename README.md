@@ -1,18 +1,24 @@
 LeagueSharp
 ===========
 
-Assemblies for League#
-
 BlackZilean
+
+- Simple Zilean Assembly
+
 ===========
-
-Simple Zilean assembly.
-
 
 BlackKassadin
+
+- Simple Kassadin Assembly
+
 ===========
 
-Simple Kassdin assembly.
+BlackPoppy
+
+- Simple Poppy Assembly
+- took it over from lKk2 because he didn't update it since 2 months.
+
+===========
 
 
 Credits
