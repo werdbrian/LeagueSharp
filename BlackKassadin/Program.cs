@@ -245,7 +245,7 @@ namespace BlackKassadin
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
             misc.AddItem(new MenuItem("miscUltToMouse", "Ult to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
             misc.AddItem(new MenuItem("miscUseR", "Use R in Ult to mouse").SetValue(true));
-            misc.AddItem(new MenuItem("miscUltStacks", "Limit to X Stacks")).SetValue(new Slider(3, 0, 4));
+            misc.AddItem(new MenuItem("miscUltStacks", "Limit to X Stacks")).SetValue(new Slider(3, 1, 4));
 
 
             //Damage after combo:
