@@ -9,16 +9,12 @@ BlackZilean
 Simple Zilean assembly.
 
 
-Credits:
-Took Hellsing's assemblys as a base. pls no be maderino at me for that.
-Esk0r for dmg indicator.
-
 BlackKassadin
 ===========
 
 Simple Kassdin assembly.
 
 
-Credits:
-Took Hellsing's assemblys as a base. pls no be maderino at me for that.
-Esk0r for dmg indicator.
+Credits
+===========
+Esk0r + Hellsing looked at some of their stuff to try and understand things and used some tiny bits of code from them.
