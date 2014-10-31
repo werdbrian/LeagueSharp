@@ -19,11 +19,10 @@ namespace BlackKassadin
         private static readonly List<Spell> spellList = new List<Spell>();
         private static Spell Q, W, E, R;
         private static SpellSlot IgniteSlot;
-        private static Items.Item DFG;
-        
+
         // Menu
         public static Menu menu;
-        
+
         private static Orbwalking.Orbwalker OW;
 
         public static void Main(string[] args)
@@ -42,11 +41,9 @@ namespace BlackKassadin
             W = new Spell(SpellSlot.W, 200);
             E = new Spell(SpellSlot.E, 700);
             R = new Spell(SpellSlot.R, 700);
-            spellList.AddRange(new []{Q, W, E, R});
+            spellList.AddRange(new[] { Q, W, E, R });
 
             IgniteSlot = player.GetSpellSlot("SummonerDot");
-
-            DFG = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3188, 750) : new Items.Item(3128, 750);
 
             // Finetune spells
             Q.SetTargetted(0.5f, 1400f);
@@ -78,15 +75,17 @@ namespace BlackKassadin
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
+            Obj_AI_Hero target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+
             // Combo
             if (menu.SubMenu("combo").Item("comboActive").GetValue<KeyBind>().Active)
-                OnCombo();
+                OnCombo(target);
 
             // Harass
-            if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active && 
+            if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
                (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) >
                 menu.Item("harassMana").GetValue<Slider>().Value)
-                OnHarass();
+                OnHarass(target);
 
             // Misc
             if (menu.SubMenu("misc").Item("miscUltToMouse").GetValue<KeyBind>().Active)
@@ -94,7 +93,7 @@ namespace BlackKassadin
 
         }
 
-        private static void OnCombo()
+        private static void OnCombo(Obj_AI_Hero target)
         {
             Menu comboMenu = menu.SubMenu("combo");
             bool useQ = comboMenu.Item("comboUseQ").GetValue<bool>() && Q.IsReady();
@@ -102,62 +101,55 @@ namespace BlackKassadin
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
             bool useR = comboMenu.Item("comboUseR").GetValue<bool>() && R.IsReady();
 
-            var Target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+            if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useR)
+            if (useR && player.Distance(target) < R.Range)
             {
-                var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     R.Cast(target, packets());
             }
 
             if (useW)
             {
-                var target = SimpleTs.GetTarget(W.Range, SimpleTs.DamageType.Magical);
-                if (target != null)
-                    W.Cast(target, packets());
+                    W.Cast(player, packets());
             }
 
-            if (useQ)
+            if (useQ && player.Distance(target) < Q.Range)
             {
-                var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     Q.Cast(target, packets());
             }
 
-            if (useE)
+            if (useE && player.Distance(target) < E.Range)
             {
-                var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     E.Cast(target, packets());
             }
 
-            if (Target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
+            if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
             player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
             {
-                if (GetComboDamage(Target) > Target.Health)
+                if (GetComboDamage(target) > target.Health)
                 {
-                    player.SummonerSpellbook.CastSpell(IgniteSlot, Target);
+                    player.SummonerSpellbook.CastSpell(IgniteSlot, target);
                 }
             }
         }
 
-        private static void OnHarass()
+        private static void OnHarass(Obj_AI_Hero target)
         {
             Menu harassMenu = menu.SubMenu("harass");
             bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
             bool useE = harassMenu.Item("harassUseE").GetValue<bool>() && E.IsReady();
 
-            if (useQ)
+            if (useQ && player.Distance(target) < Q.Range)
             {
-                var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     Q.Cast(target, packets());
             }
 
-            if (useE)
+            if (useE && player.Distance(target) < E.Range)
             {
-                var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     E.Cast(target, packets());
             }
@@ -167,17 +159,26 @@ namespace BlackKassadin
         {
             Menu miscMenu = menu.SubMenu("misc");
             bool useR = miscMenu.Item("miscUseR").GetValue<bool>() && R.IsReady();
+            var rOnPlayer = RBuffCount();
+            var keepStacks = miscMenu.Item("miscUltStacks").GetValue<Slider>().Value;
 
-            if (useR)
+            if (useR && rOnPlayer < keepStacks)
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
                 R.Cast(Game.CursorPos, packets());
             }
 
-            else
+            else 
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
             }
+        }
+
+        private static int RBuffCount()
+        {
+            var buff =
+            ObjectManager.Player.Buffs.FirstOrDefault(buff1 => buff1.Name.Equals("RiftWalk"));
+            return buff != null ? buff.Count : 0;
         }
 
         private static float GetComboDamage(Obj_AI_Base enemy)
@@ -185,9 +186,6 @@ namespace BlackKassadin
             var damage = 0d;
             if (R.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.R);
-
-            if (DFG.IsReady())
-                damage += player.GetItemDamage(enemy, Damage.DamageItems.Dfg) / 1.2;
 
             if (W.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.W);
@@ -201,7 +199,7 @@ namespace BlackKassadin
             if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
 
-            return (float)damage * (DFG.IsReady() ? 1.2f : 1);
+            return (float)damage;
         }
 
         private static bool packets()
@@ -245,9 +243,9 @@ namespace BlackKassadin
             menu.AddSubMenu(misc);
             misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
-            //misc.AddItem(new MenuItem("miscDFG", "Use DFG").SetValue(true));
             misc.AddItem(new MenuItem("miscUltToMouse", "Ult to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
             misc.AddItem(new MenuItem("miscUseR", "Use R in Ult to mouse").SetValue(true));
+            misc.AddItem(new MenuItem("miscUltStacks", "Limit to X Stacks")).SetValue(new Slider(3, 0, 4));
 
 
             //Damage after combo:

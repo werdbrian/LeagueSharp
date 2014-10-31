@@ -19,7 +19,6 @@ namespace BlackZilean
         private static readonly List<Spell> spellList = new List<Spell>();
         private static Spell Q, W, E, R;
         private static SpellSlot IgniteSlot;
-        private static Items.Item DFG;
 
         // Menu
         public static Menu menu;
@@ -46,8 +45,6 @@ namespace BlackZilean
 
             IgniteSlot = player.GetSpellSlot("SummonerDot");
 
-            DFG = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ? new Items.Item(3188, 750) : new Items.Item(3128, 750);
-
             // Create menu
             createMenu();
 
@@ -73,15 +70,17 @@ namespace BlackZilean
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
+            Obj_AI_Hero target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+
             // Combo
             if (menu.SubMenu("combo").Item("comboActive").GetValue<KeyBind>().Active)
-                OnCombo();
+                OnCombo(target);
 
             // Harass
             if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
                (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) >
                 menu.Item("harassMana").GetValue<Slider>().Value)
-                OnHarass();
+                OnHarass(target);
 
             // AutoUlt
             if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>())
@@ -93,18 +92,15 @@ namespace BlackZilean
 
         }
 
-        private static void OnCombo()
+        private static void OnCombo(Obj_AI_Hero target)
         {
             Menu comboMenu = menu.SubMenu("combo");
             bool useQ = comboMenu.Item("comboUseQ").GetValue<bool>() && Q.IsReady();
             bool useW = comboMenu.Item("comboUseW").GetValue<bool>() && W.IsReady();
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
 
-            var Target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
-
             if (useQ)
             {
-                var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     Q.Cast(target, packets());
             }
@@ -116,22 +112,21 @@ namespace BlackZilean
 
             if (useE)
             {
-                var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     E.Cast(target, packets());
             }
 
-            if (Target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
+            if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
             player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
             {
-                if (GetComboDamage(Target) > Target.Health)
+                if (GetComboDamage(target) > target.Health)
                 {
-                    player.SummonerSpellbook.CastSpell(IgniteSlot, Target);
+                    player.SummonerSpellbook.CastSpell(IgniteSlot, target);
                 }
             }
         }
 
-        private static void OnHarass()
+        private static void OnHarass(Obj_AI_Hero target)
         {
             Menu harassMenu = menu.SubMenu("harass");
             bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
@@ -139,14 +134,13 @@ namespace BlackZilean
 
             if (useQ)
             {
-                var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
                 if (target != null)
                     Q.Cast(target, packets());
             }
 
             if (useW && !useQ)
             {
-                W.Cast();
+                W.Cast(player, packets());
             }
         }
 
@@ -181,9 +175,6 @@ namespace BlackZilean
             if (Q.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.Q);
 
-            if (DFG.IsReady())
-                damage += player.GetItemDamage(enemy, Damage.DamageItems.Dfg) / 1.2;
-
             if (W.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.W);
 
@@ -193,7 +184,7 @@ namespace BlackZilean
             if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
 
-            return (float)damage * (DFG.IsReady() ? 1.2f : 1);
+            return (float)damage;
         }
 
         private static bool packets()
@@ -245,7 +236,6 @@ namespace BlackZilean
             menu.AddSubMenu(misc);
             misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
-            //misc.AddItem(new MenuItem("miscDFG", "Use DFG").SetValue(true));
             misc.AddItem(new MenuItem("miscFleeToMouse", "Flee to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
 
             //Damage after combo:
