@@ -19,6 +19,7 @@ namespace BlackKassadin
         private static readonly List<Spell> spellList = new List<Spell>();
         private static Spell Q, W, E, R;
         private static SpellSlot IgniteSlot;
+        private static Items.Item DFG;
 
         // Menu
         public static Menu menu;
@@ -44,6 +45,10 @@ namespace BlackKassadin
             spellList.AddRange(new[] { Q, W, E, R });
 
             IgniteSlot = player.GetSpellSlot("SummonerDot");
+
+            DFG = Utility.Map.GetMap()._MapType == Utility.Map.MapType.TwistedTreeline ||
+                  Utility.Map.GetMap()._MapType == Utility.Map.MapType.CrystalScar
+                ? new Items.Item(3188, 750) : new Items.Item(3128, 750);
 
             // Finetune spells
             Q.SetTargetted(0.5f, 1400f);
@@ -91,6 +96,9 @@ namespace BlackKassadin
             if (menu.SubMenu("misc").Item("miscUltToMouse").GetValue<KeyBind>().Active)
                 UltToMouse();
 
+            // Killsteal
+            Killsteal(target);
+
         }
 
         private static void OnCombo(Obj_AI_Hero target)
@@ -100,8 +108,14 @@ namespace BlackKassadin
             bool useW = comboMenu.Item("comboUseW").GetValue<bool>() && W.IsReady();
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
             bool useR = comboMenu.Item("comboUseR").GetValue<bool>() && R.IsReady();
+            var comboDamage = target != null ? GetComboDamage(target) : 0;
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
+
+            if (target != null && comboDamage > target.Health && DFG.IsReady())
+            {
+                DFG.Cast(target);
+            }
 
             if (useR && player.Distance(target) < R.Range)
             {
@@ -155,6 +169,37 @@ namespace BlackKassadin
             }
         }
 
+        private static void Killsteal(Obj_AI_Hero target)
+        {
+            Menu killstealMenu = menu.SubMenu("killsteal");
+            bool useQ = killstealMenu.Item("killstealUseQ").GetValue<bool>() && Q.IsReady();
+            bool useE = killstealMenu.Item("killstealUseE").GetValue<bool>() && E.IsReady();
+            bool useR = killstealMenu.Item("killstealUseR").GetValue<bool>() && R.IsReady();
+
+            if (useQ && target.Distance(player) < Q.Range)
+            {
+                if (Q.IsKillable(target))
+                {
+                    Q.Cast(target, packets());
+                }
+            }
+            if (useE && target.Distance(player) < E.Range)
+            {
+                if (E.IsKillable(target))
+                {
+                    E.Cast(target, packets());
+                }
+            }
+
+            if (useR && target.Distance(player) < R.Range)
+            {
+                if (R.IsKillable(target))
+                {
+                    R.Cast(target, packets());
+                }
+            }
+        }
+
         private static void UltToMouse()
         {
             Menu miscMenu = menu.SubMenu("misc");
@@ -167,8 +212,8 @@ namespace BlackKassadin
                 Orbwalking.Orbwalk(null, Game.CursorPos);
                 R.Cast(Game.CursorPos, packets());
             }
-
-            else 
+                
+            else
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
             }
@@ -187,6 +232,9 @@ namespace BlackKassadin
             if (R.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.R);
 
+            if (DFG.IsReady())
+                damage += player.GetItemDamage(enemy, Damage.DamageItems.Dfg) / 1.2;
+
             if (W.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.W);
 
@@ -199,7 +247,7 @@ namespace BlackKassadin
             if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
 
-            return (float)damage;
+            return (float)damage * (DFG.IsReady() ? 1.2f : 1);
         }
 
         private static bool packets()
@@ -238,11 +286,19 @@ namespace BlackKassadin
             harass.AddItem(new MenuItem("harassMana", "Mana To Harass").SetValue(new Slider(40, 100, 0)));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
 
+            // Killsteal
+            Menu killsteal = new Menu("Killsteal", "killsteal");
+            menu.AddSubMenu(killsteal);
+            killsteal.AddItem(new MenuItem("killstealUseQ", "Use Q").SetValue(true));
+            killsteal.AddItem(new MenuItem("killstealUseE", "Use E").SetValue(false));
+            killsteal.AddItem(new MenuItem("killstealUseR", "Use R").SetValue(false));
+
             // Misc
             Menu misc = new Menu("Misc", "misc");
             menu.AddSubMenu(misc);
             misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
+            misc.AddItem(new MenuItem("miscDFG", "Use DFG").SetValue(true));
             misc.AddItem(new MenuItem("miscUltToMouse", "Ult to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
             misc.AddItem(new MenuItem("miscUseR", "Use R in Ult to mouse").SetValue(true));
             misc.AddItem(new MenuItem("miscUltStacks", "Limit to X Stacks")).SetValue(new Slider(3, 1, 4));
@@ -262,8 +318,8 @@ namespace BlackKassadin
             menu.AddSubMenu(drawings);
             drawings.AddItem(new MenuItem("drawRangeQ", "Q range").SetValue(new Circle(true, Color.Aquamarine)));
             drawings.AddItem(new MenuItem("drawRangeW", "W range").SetValue(new Circle(false, Color.Aquamarine)));
-            drawings.AddItem(new MenuItem("drawRangeE", "E range").SetValue(new Circle(false, Color.Aquamarine)));
-            drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
+            drawings.AddItem(new MenuItem("drawRangeE", "E / R range").SetValue(new Circle(false, Color.Aquamarine)));
+            //drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
             drawings.AddItem(dmgAfterComboItem);
 
             // Finalizing
