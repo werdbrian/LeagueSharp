@@ -88,9 +88,15 @@ namespace BlackKassadin
 
             // Harass
             if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
-               (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) >
+               (player.Mana / player.MaxMana * 100) >
                 menu.Item("harassMana").GetValue<Slider>().Value)
                 OnHarass(target);
+
+            // WaveClear
+            if (menu.SubMenu("waveclear").Item("wcActive").GetValue<KeyBind>().Active &&
+               (player.Mana / player.MaxMana * 100) >
+                menu.Item("wcMana").GetValue<Slider>().Value)
+                waveclear();
 
             // Misc
             if (menu.SubMenu("misc").Item("miscUltToMouse").GetValue<KeyBind>().Active)
@@ -108,6 +114,7 @@ namespace BlackKassadin
             bool useW = comboMenu.Item("comboUseW").GetValue<bool>() && W.IsReady();
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
             bool useR = comboMenu.Item("comboUseR").GetValue<bool>() && R.IsReady();
+
             var comboDamage = target != null ? GetComboDamage(target) : 0;
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
@@ -156,6 +163,8 @@ namespace BlackKassadin
             bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
             bool useE = harassMenu.Item("harassUseE").GetValue<bool>() && E.IsReady();
 
+            if (target.HasBuffOfType(BuffType.Invulnerability)) return;
+
             if (useQ && player.Distance(target) < Q.Range)
             {
                 if (target != null)
@@ -175,6 +184,8 @@ namespace BlackKassadin
             bool useQ = killstealMenu.Item("killstealUseQ").GetValue<bool>() && Q.IsReady();
             bool useE = killstealMenu.Item("killstealUseE").GetValue<bool>() && E.IsReady();
             bool useR = killstealMenu.Item("killstealUseR").GetValue<bool>() && R.IsReady();
+
+            if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
             if (useQ && target.Distance(player) < Q.Range)
             {
@@ -196,6 +207,48 @@ namespace BlackKassadin
                 if (R.IsKillable(target))
                 {
                     R.Cast(target, packets());
+                }
+            }
+        }
+
+        private static void waveclear()
+        {
+            Menu waveclearMenu = menu.SubMenu("waveclear");
+            bool useQ = waveclearMenu.Item("wcUseQ").GetValue<bool>() && Q.IsReady();
+            bool useE = waveclearMenu.Item("wcUseQ").GetValue<bool>() && E.IsReady();
+
+            var allMinionsQ = MinionManager.GetMinions(player.ServerPosition, Q.Range);
+            var allMinionsE = MinionManager.GetMinions(player.ServerPosition, E.Range);
+
+            if (useQ)
+            {
+                foreach (var minion in allMinionsQ)
+                {
+                    if (minion.IsValidTarget() &&
+                    HealthPrediction.GetHealthPrediction(minion,
+                    (int)(player.Distance(minion) * 1000 / 1400)) <
+                    player.GetSpellDamage(minion, SpellSlot.Q))
+                    {
+                        Q.CastOnUnit(minion, packets());
+                        return;
+                    }
+                }
+            }
+
+            if (useE && allMinionsE.Count > 3)
+            {
+                var farm = E.GetLineFarmLocation(allMinionsE, E.Width);
+
+                foreach (var minion in allMinionsE)
+                {
+                    if (minion.IsValidTarget() &&
+                    HealthPrediction.GetHealthPrediction(minion,
+                    (int)(player.Distance(minion) * 1000 / 1400)) <
+                    player.GetSpellDamage(minion, SpellSlot.E))
+                    {
+                        E.Cast(farm.Position, packets());
+                        return;
+                    }
                 }
             }
         }
@@ -285,6 +338,14 @@ namespace BlackKassadin
             harass.AddItem(new MenuItem("harassUseE", "Use E").SetValue(false));
             harass.AddItem(new MenuItem("harassMana", "Mana To Harass").SetValue(new Slider(40, 100, 0)));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
+
+            // WaveClear
+            Menu waveclear = new Menu("Waveclear", "waveclear");
+            menu.AddSubMenu(waveclear);
+            waveclear.AddItem(new MenuItem("wcUseQ", "Use Q").SetValue(true));
+            waveclear.AddItem(new MenuItem("wcUseE", "Use E").SetValue(true));
+            waveclear.AddItem(new MenuItem("wcMana", "Mana to Waveclear").SetValue(new Slider(40, 100, 0)));
+            waveclear.AddItem(new MenuItem("wcActive", "Waveclear active!").SetValue(new KeyBind('V', KeyBindType.Press)));
 
             // Killsteal
             Menu killsteal = new Menu("Killsteal", "killsteal");
