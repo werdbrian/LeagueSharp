@@ -217,8 +217,8 @@ namespace BlackKassadin
             bool useQ = waveclearMenu.Item("wcUseQ").GetValue<bool>() && Q.IsReady();
             bool useE = waveclearMenu.Item("wcUseQ").GetValue<bool>() && E.IsReady();
 
-            var allMinionsQ = MinionManager.GetMinions(player.ServerPosition, Q.Range);
-            var allMinionsE = MinionManager.GetMinions(player.ServerPosition, E.Range);
+            var allMinionsQ = MinionManager.GetMinions(player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Enemy);
+            var allMinionsE = MinionManager.GetMinions(player.ServerPosition, E.Range, MinionTypes.All, MinionTeam.Enemy);
 
             if (useQ)
             {
@@ -249,6 +249,24 @@ namespace BlackKassadin
                         E.Cast(farm.Position, packets());
                         return;
                     }
+                }
+            }
+
+            var jcreeps = MinionManager.GetMinions(player.ServerPosition, E.Range, MinionTypes.All,
+            MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+
+            if (jcreeps.Count > 0)
+            {
+                var jcreep = jcreeps[0];
+
+                if (useQ)
+                {
+                    Q.Cast(jcreep, packets());
+                }
+
+                if (useE)
+                {
+                    E.Cast(jcreep, packets());
                 }
             }
         }
