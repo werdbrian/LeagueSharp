@@ -13,6 +13,12 @@ BlackKassadin
 
 ===========
 
+BlackWarwick
+
+- Simple Warwick Assembly
+
+===========
+
 BlackPoppy
 
 - Simple Poppy Assembly
