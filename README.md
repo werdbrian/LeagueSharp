@@ -10,6 +10,13 @@ BlackZilean
 BlackKassadin
 
 - Simple Kassadin Assembly
+-   SBTW Combo
+-   Harass with ManaControl
+-   Waveclear with ManaControl
+-   Killsteal with Q / E / R (E & R disabled by default)
+-   Escape with Ult to mouse Position
+-   Use DFG in Combo if target is killable
+-   Use Ignite in Combo if Killable
 
 ===========
 
