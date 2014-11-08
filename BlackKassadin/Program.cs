@@ -215,7 +215,7 @@ namespace BlackKassadin
         {
             Menu waveclearMenu = menu.SubMenu("waveclear");
             bool useQ = waveclearMenu.Item("wcUseQ").GetValue<bool>() && Q.IsReady();
-            bool useE = waveclearMenu.Item("wcUseQ").GetValue<bool>() && E.IsReady();
+            bool useE = waveclearMenu.Item("wcUseE").GetValue<bool>() && E.IsReady();
 
             var allMinionsQ = MinionManager.GetMinions(player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Enemy);
             var allMinionsE = MinionManager.GetMinions(player.ServerPosition, E.Range, MinionTypes.All, MinionTeam.Enemy);
