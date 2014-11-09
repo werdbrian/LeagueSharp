@@ -85,9 +85,18 @@ namespace BlackPoppy
                 menu.Item("harassMana").GetValue<Slider>().Value)
                 OnHarass(target);
 
+            // WaveClear
+            if (menu.SubMenu("waveclear").Item("wcActive").GetValue<KeyBind>().Active &&
+            (player.Mana / player.MaxMana * 100) >
+            menu.Item("wcMana").GetValue<Slider>().Value)
+                waveclear();
+
             // Misc
             if (menu.SubMenu("misc").Item("miscEscapeToMouse").GetValue<KeyBind>().Active)
                 EscapeToMouse();
+
+            // Killsteal
+                Killsteal(target);
 
         }
 
@@ -101,7 +110,7 @@ namespace BlackPoppy
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useR && player.Distance(target) < R.Range && ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(R.Range)) >= menu.Item("comboLogicR").GetValue<Slider>().Value)
+            if (useR && player.Distance(target) < R.Range && ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(R.Range)) >= menu.Item("comboLogicR").GetValue<Slider>().Value && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
             {
                 if (target != null)
                     UltLogic();
@@ -114,7 +123,7 @@ namespace BlackPoppy
                     {
                         W.Cast(player, packets());
                     }
-                    ELogic();
+                ELogic();
             }
 
             if (useQ && player.Distance(target) < Q.Range)
@@ -141,7 +150,7 @@ namespace BlackPoppy
             if (useQ && player.Distance(target) < Q.Range)
             {
                 if (target != null)
-                    Q.Cast(target, packets());
+                    Q.Cast(player, packets());
             }
 
         }
@@ -189,17 +198,108 @@ namespace BlackPoppy
                                  let prediction = E.GetPrediction(hero)
                                  where NavMesh.GetCollisionFlags(
                                  prediction.UnitPosition.To2D()
-                                 .Extend(ObjectManager.Player.ServerPosition.To2D(), -450)
+                                 .Extend(ObjectManager.Player.ServerPosition.To2D(), -400)
                                  .To3D())
                                  .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
                                  prediction.UnitPosition.To2D()
                                  .Extend(ObjectManager.Player.ServerPosition.To2D(),
-                                 -(450 / 2))
+                                 -(400 / 2))
                                  .To3D())
                                  .HasFlag(CollisionFlags.Wall)
                                  select hero)
             {
                 E.Cast(hero, packets());
+            }
+        }
+
+        private static void Killsteal(Obj_AI_Hero target)
+        {
+            Menu killstealMenu = menu.SubMenu("killsteal");
+            bool useQ = killstealMenu.Item("killstealUseQ").GetValue<bool>() && Q.IsReady();
+            bool useE = killstealMenu.Item("killstealUseE").GetValue<bool>() && E.IsReady();
+
+            if (target.HasBuffOfType(BuffType.Invulnerability)) return;
+
+            if (useQ && target.Distance(player) < Q.Range)
+            {
+                if (Q.IsKillable(target))
+                {
+                    Q.Cast(player, packets());
+                }
+            }
+
+            if (useE && target.Distance(player) < E.Range)
+            {
+                if (E.IsKillable(target))
+                {
+                    E.Cast(target, packets());
+                }
+            }
+        }
+
+        private static void waveclear()
+        {
+            Menu waveclearMenu = menu.SubMenu("waveclear");
+            bool useQ = waveclearMenu.Item("wcUseQ").GetValue<bool>() && Q.IsReady();
+            bool useW = waveclearMenu.Item("wcUseW").GetValue<bool>() && W.IsReady();
+            bool useE = waveclearMenu.Item("wcUseE").GetValue<bool>() && E.IsReady();
+
+            var allMinionsQ = MinionManager.GetMinions(player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Enemy);
+
+            if (useQ)
+            {
+                foreach (var minion in allMinionsQ)
+                {
+                    if (minion.IsValidTarget() &&
+                    Q.IsKillable(minion))
+                    {
+                        Q.CastOnUnit(player, packets());
+                        return;
+                    }
+                }
+            }
+
+            if (useW && allMinionsQ.Count > 1)
+            {
+                W.Cast(player, packets());
+            }
+
+            if (useE)
+            {
+                foreach (var minion in allMinionsQ)
+                {
+                    if (minion.IsValidTarget() &&
+                    HealthPrediction.GetHealthPrediction(minion,
+                    (int)(player.Distance(minion) * 1000 / 1450)) <
+                    player.GetSpellDamage(minion, SpellSlot.E))
+                    {
+                        E.CastOnUnit(minion, packets());
+                        return;
+                    }
+                }
+            }
+
+            var jcreeps = MinionManager.GetMinions(player.ServerPosition, E.Range, MinionTypes.All,
+            MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+
+            if (jcreeps.Count > 0)
+            {
+                var jcreep = jcreeps[0];
+
+                if (useQ)
+                {
+                    Q.Cast(player, packets());
+                }
+
+                if (useW)
+                {
+                    W.Cast(player, packets());
+                }
+
+                if (useE)
+                {
+                    E.Cast(jcreep, packets());
+                }
             }
         }
 
@@ -260,6 +360,21 @@ namespace BlackPoppy
             harass.AddItem(new MenuItem("harassMana", "Mana To Harass").SetValue(new Slider(40, 100, 0)));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
 
+            // WaveClear
+            Menu waveclear = new Menu("Waveclear", "waveclear");
+            menu.AddSubMenu(waveclear);
+            waveclear.AddItem(new MenuItem("wcUseQ", "Use Q").SetValue(true));
+            waveclear.AddItem(new MenuItem("wcUseW", "Use W").SetValue(true));
+            waveclear.AddItem(new MenuItem("wcUseE", "Use E").SetValue(true));
+            waveclear.AddItem(new MenuItem("wcMana", "Mana to Waveclear").SetValue(new Slider(40, 100, 0)));
+            waveclear.AddItem(new MenuItem("wcActive", "Waveclear active!").SetValue(new KeyBind('V', KeyBindType.Press)));
+
+            // Killsteal
+            Menu killsteal = new Menu("Killsteal", "killsteal");
+            menu.AddSubMenu(killsteal);
+            killsteal.AddItem(new MenuItem("killstealUseQ", "Use Q").SetValue(true));
+            killsteal.AddItem(new MenuItem("killstealUseE", "Use E").SetValue(true));
+
             // Misc
             Menu misc = new Menu("Misc", "misc");
             menu.AddSubMenu(misc);
@@ -267,6 +382,11 @@ namespace BlackPoppy
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
             misc.AddItem(new MenuItem("miscEscapeToMouse", "Escape to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
             misc.AddItem(new MenuItem("miscUseW", "Use W in Escape to mouse").SetValue(true));
+            misc.AddItem(new MenuItem("DontUlt", "Dont use R on"));
+            misc.AddItem(new MenuItem("sep0", "========="));
+            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != player.Team))
+                misc.AddItem(new MenuItem("DontUlt" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
+            misc.AddItem(new MenuItem("sep1", "========="));
 
             //Damage after combo:
             var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
@@ -289,4 +409,3 @@ namespace BlackPoppy
         }
     }
 }
-
