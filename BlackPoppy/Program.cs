@@ -198,12 +198,12 @@ namespace BlackPoppy
                                  let prediction = E.GetPrediction(hero)
                                  where NavMesh.GetCollisionFlags(
                                  prediction.UnitPosition.To2D()
-                                 .Extend(ObjectManager.Player.ServerPosition.To2D(), -400)
+                                 .Extend(ObjectManager.Player.ServerPosition.To2D(), -300)
                                  .To3D())
                                  .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
                                  prediction.UnitPosition.To2D()
                                  .Extend(ObjectManager.Player.ServerPosition.To2D(),
-                                 -(400 / 2))
+                                 -(300 / 2))
                                  .To3D())
                                  .HasFlag(CollisionFlags.Wall)
                                  select hero)
