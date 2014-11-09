@@ -70,7 +70,7 @@ namespace BlackZilean
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            Obj_AI_Hero target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
 
             // Combo
             if (menu.SubMenu("combo").Item("comboActive").GetValue<KeyBind>().Active)
@@ -82,13 +82,22 @@ namespace BlackZilean
                 menu.Item("harassMana").GetValue<Slider>().Value)
                 OnHarass(target);
 
+            // WaveClear
+            if (menu.SubMenu("waveclear").Item("wcActive").GetValue<KeyBind>().Active &&
+            (player.Mana / player.MaxMana * 100) >
+            menu.Item("wcMana").GetValue<Slider>().Value)
+                waveclear();
+
             // AutoUlt
             if (menu.SubMenu("ult").Item("ultUseR").GetValue<bool>())
                 AutoUlt();
 
             // Misc
-            if (menu.SubMenu("misc").Item("miscFleeToMouse").GetValue<KeyBind>().Active)
-                FleeToMouse();
+            if (menu.SubMenu("misc").Item("miscEscapeToMouse").GetValue<KeyBind>().Active)
+                EscapeToMouse();
+
+            // Killsteal
+            Killsteal(target);
 
         }
 
@@ -99,21 +108,27 @@ namespace BlackZilean
             bool useW = comboMenu.Item("comboUseW").GetValue<bool>() && W.IsReady();
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
 
-            if (useQ)
+            if (useQ && player.Distance(target) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
             }
 
-            if (useW && !useQ)
+            if (useW && !Q.IsReady())
             {
-                W.Cast();
+                W.Cast(player, packets());
             }
 
-            if (useE)
+            if (useE && player.Distance(target) < E.Range)
             {
                 if (target != null)
                     E.Cast(target, packets());
+            }
+
+            if (useE && player.Distance(target) > E.Range)
+            {
+                if (target != null)
+                    E.Cast(player, packets());
             }
 
             if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
@@ -132,15 +147,82 @@ namespace BlackZilean
             bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
             bool useW = harassMenu.Item("harassUseW").GetValue<bool>() && W.IsReady();
 
-            if (useQ)
+            if (useQ && player.Distance(target) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
             }
 
-            if (useW && !useQ)
+            if (useW && !Q.IsReady())
             {
                 W.Cast(player, packets());
+            }
+        }
+
+        private static void Killsteal(Obj_AI_Hero target)
+        {
+            Menu killstealMenu = menu.SubMenu("killsteal");
+            bool useQ = killstealMenu.Item("killstealUseQ").GetValue<bool>() && Q.IsReady();
+            bool useW = killstealMenu.Item("killstealUseW").GetValue<bool>() && W.IsReady();
+
+            if (target.HasBuffOfType(BuffType.Invulnerability)) return;
+
+            if (useQ && target.Distance(player) < Q.Range)
+            {
+                if (Q.IsKillable(target))
+                {
+                    Q.Cast(target, packets());
+                }
+            }
+
+            if (useW && !Q.IsReady())
+            {
+                W.Cast(player, packets());
+            }
+        }
+
+        private static void waveclear()
+        {
+            Menu waveclearMenu = menu.SubMenu("waveclear");
+            bool useQ = waveclearMenu.Item("wcUseQ").GetValue<bool>() && Q.IsReady();
+            bool useW = waveclearMenu.Item("wcUseW").GetValue<bool>() && W.IsReady();
+
+            var allMinionsQ = MinionManager.GetMinions(player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Enemy);
+
+            if (useQ && allMinionsQ.Count > 2)
+            {
+                foreach (var minion in allMinionsQ)
+                {
+                    if (minion.IsValidTarget() &&
+                    Q.IsKillable(minion))
+                    {
+                        Q.CastOnUnit(minion, packets());
+                        return;
+                    }
+                }
+            }
+
+            if (useW && !Q.IsReady())
+            {
+                W.Cast(player, packets());
+            }
+
+            var jcreeps = MinionManager.GetMinions(player.ServerPosition, E.Range, MinionTypes.All,
+            MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+
+            if (jcreeps.Count > 0)
+            {
+                var jcreep = jcreeps[0];
+
+                if (useQ)
+                {
+                    Q.Cast(jcreep, packets());
+                }
+
+                if (useW && !Q.IsReady())
+                {
+                    W.Cast(player, packets());
+                }
             }
         }
 
@@ -159,13 +241,20 @@ namespace BlackZilean
             }
         }
 
-        private static void FleeToMouse()
+        private static void EscapeToMouse()
         {
             Menu miscMenu = menu.SubMenu("misc");
+            bool useE = miscMenu.Item("miscUseE").GetValue<bool>() && E.IsReady();
 
+            if(useE)
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
                 E.Cast(player, packets());
+            }
+
+            else
+            {
+                Orbwalking.Orbwalk(null, Game.CursorPos);
             }
         }
 
@@ -222,13 +311,29 @@ namespace BlackZilean
             harass.AddItem(new MenuItem("harassMana", "Mana To Harass").SetValue(new Slider(40, 100, 0)));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
 
+            // WaveClear
+            Menu waveclear = new Menu("Waveclear", "waveclear");
+            menu.AddSubMenu(waveclear);
+            waveclear.AddItem(new MenuItem("wcUseQ", "Use Q").SetValue(true));
+            waveclear.AddItem(new MenuItem("wcUseW", "Use W").SetValue(true));
+            waveclear.AddItem(new MenuItem("wcMana", "Mana to Waveclear").SetValue(new Slider(40, 100, 0)));
+            waveclear.AddItem(new MenuItem("wcActive", "Waveclear active!").SetValue(new KeyBind('V', KeyBindType.Press)));
+
+            // Killsteal
+            Menu killsteal = new Menu("Killsteal", "killsteal");
+            menu.AddSubMenu(killsteal);
+            killsteal.AddItem(new MenuItem("killstealUseQ", "Use Q").SetValue(true));
+            killsteal.AddItem(new MenuItem("killstealUseW", "Use W").SetValue(true));
+
             // Ult
             Menu ult = new Menu("Ult", "ult");
             menu.AddSubMenu(ult);
-            ult.AddItem(new MenuItem("ultUseR", "Use R")).SetValue(true);
+            ult.AddItem(new MenuItem("ultUseR", "Use R on")).SetValue(true);
+            ult.AddItem(new MenuItem("sep0", "========="));
             foreach (Obj_AI_Hero Champ in ObjectManager.Get<Obj_AI_Hero>())
                 if (Champ.IsAlly)
                     ult.AddItem(new MenuItem("Ult" + Champ.BaseSkinName, string.Format("Ult {0}", Champ.BaseSkinName)).SetValue(true));
+            ult.AddItem(new MenuItem("sep1", "========="));
             ult.AddItem(new MenuItem("ultPercent", "R at % HP")).SetValue(new Slider(25, 1, 100));
 
             // Misc
@@ -236,7 +341,8 @@ namespace BlackZilean
             menu.AddSubMenu(misc);
             misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
-            misc.AddItem(new MenuItem("miscFleeToMouse", "Flee to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
+            misc.AddItem(new MenuItem("miscEscapeToMouse", "Escape to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
+            misc.AddItem(new MenuItem("miscUseE", "Use E in escape to mouse").SetValue(true));
 
             //Damage after combo:
             var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
@@ -250,8 +356,8 @@ namespace BlackZilean
             // Drawings
             Menu drawings = new Menu("Drawings", "drawings");
             menu.AddSubMenu(drawings);
-            drawings.AddItem(new MenuItem("drawRangeQ", "Q range").SetValue(new Circle(true, Color.Aquamarine)));
-            drawings.AddItem(new MenuItem("drawRangeE", "E range").SetValue(new Circle(false, Color.Aquamarine)));
+            drawings.AddItem(new MenuItem("drawRangeQ", "Q / E range").SetValue(new Circle(true, Color.Aquamarine)));
+            //drawings.AddItem(new MenuItem("drawRangeE", "E range").SetValue(new Circle(false, Color.Aquamarine)));
             drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
             drawings.AddItem(dmgAfterComboItem);
 

@@ -96,7 +96,7 @@ namespace BlackPoppy
                 EscapeToMouse();
 
             // Killsteal
-                Killsteal(target);
+            Killsteal(target);
 
         }
 
