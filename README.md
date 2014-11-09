@@ -29,7 +29,6 @@ BlackWarwick
 BlackPoppy
 
 - Simple Poppy Assembly
-- took it over from lKk2 because he didn't update it since 2 months.
 
 ===========
 
