@@ -151,7 +151,7 @@ namespace BlackGragas
                     E.Cast(target, packets());
             }
 
-            if (useQ && player.Distance(target) < Q.Range && Q.GetPrediction(target).Hitchance >= HitChance.High && QBarrel == null)
+            if (useQ && player.Distance(target) < Q.Range && Q.GetPrediction(target).Hitchance >= HitChance.High)
             {
                 if (target != null)
                     Utility.DelayAction.Add(500, () => Q.Cast(target, packets()));
@@ -283,12 +283,14 @@ namespace BlackGragas
                     player.GetSpellDamage(minion, SpellSlot.Q))
                     {
                         Q.Cast(farm.Position, packets());
+                        QBarrel = new GameObject();
                         return;
                     }
                    
-                    if (QBuff)
+                    if (QBarrel != null && QBuff)
                     {
                         Q.Cast(packets());
+                        QBarrel = null;
                     }
                 }
             }
