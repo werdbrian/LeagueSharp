@@ -35,6 +35,7 @@ BlackPoppy
 BlackGragas
 
 - Simple Gragas Assembly
+- Credits to alrik94 for the OnCreate/Delete part
 
 ===========
 
