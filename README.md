@@ -29,6 +29,7 @@ BlackWarwick
 BlackPoppy
 
 - Simple Poppy Assembly
+- Credits to Kk2 because i reworked his Poppy.
 
 ===========
 
