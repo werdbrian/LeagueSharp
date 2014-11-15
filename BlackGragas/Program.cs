@@ -50,7 +50,7 @@ namespace BlackGragas
 
             //Define spells
             Q = new Spell(SpellSlot.Q, 850);
-            Q2 = new Spell(SpellSlot.Q, 250);
+            Q2 = new Spell(SpellSlot.Q, 270);
             W = new Spell(SpellSlot.W);
             E = new Spell(SpellSlot.E, 600);
             R = new Spell(SpellSlot.R, 1150);
