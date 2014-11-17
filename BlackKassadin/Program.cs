@@ -39,8 +39,8 @@ namespace BlackKassadin
 
             //Define spells
             Q = new Spell(SpellSlot.Q, 650);
-            W = new Spell(SpellSlot.W, 200);
-            E = new Spell(SpellSlot.E, 700);
+            W = new Spell(SpellSlot.W, 150);
+            E = new Spell(SpellSlot.E, 650);
             R = new Spell(SpellSlot.R, 700);
             spellList.AddRange(new[] { Q, W, E, R });
 
@@ -194,6 +194,7 @@ namespace BlackKassadin
                     Q.Cast(target, packets());
                 }
             }
+
             if (useE && target.Distance(player) < E.Range)
             {
                 if (E.IsKillable(target))
