@@ -227,6 +227,8 @@ namespace BlackWarwick
         private static float GetComboDamage(Obj_AI_Base enemy)
         {
             var damage = 0d;
+
+                damage += player.GetAutoAttackDamage(enemy);
             if (R.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.R);
 
@@ -235,9 +237,6 @@ namespace BlackWarwick
 
             if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
-
-            if (smiteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(smiteSlot) == SpellState.Ready)
-                damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Smite);
 
             return (float)damage;
         }
