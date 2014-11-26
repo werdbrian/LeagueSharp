@@ -114,7 +114,7 @@ namespace BlackWarwick
                 W.Cast(player, packets());
             }
 
-            if (target != null && menu.Item("miscSmite").GetValue<bool>() && smiteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(smiteSlot) == SpellState.Ready && useR)
+            if (target != null && menu.Item("miscSmite").GetValue<bool>() && smiteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(smiteSlot) == SpellState.Ready && useR && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
             {
                 player.SummonerSpellbook.CastSpell(smiteSlot, target);
             }
