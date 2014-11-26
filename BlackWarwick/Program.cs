@@ -18,7 +18,7 @@ namespace BlackWarwick
         // Spells
         private static readonly List<Spell> spellList = new List<Spell>();
         private static Spell Q, W, E, R;
-        private static SpellSlot IgniteSlot;
+        private static SpellSlot IgniteSlot, smiteSlot;
 
         // Menu
         public static Menu menu;
@@ -44,12 +44,16 @@ namespace BlackWarwick
             spellList.AddRange(new[] { Q, W, E, R });
 
             IgniteSlot = player.GetSpellSlot("SummonerDot");
+            smiteSlot = SpellSlot.Unknown;
 
             // Finetune spells
             R.SetTargetted(0.5f, float.MaxValue);
 
             // Create menu
             createMenu();
+
+            // Set smiteslot
+            setSmiteSlot();
 
             // Register events
             Game.OnGameUpdate += Game_OnGameUpdate;
@@ -110,6 +114,11 @@ namespace BlackWarwick
                 W.Cast(player, packets());
             }
 
+            if (target != null && menu.Item("miscSmite").GetValue<bool>() && smiteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(smiteSlot) == SpellState.Ready && useR)
+            {
+                player.SummonerSpellbook.CastSpell(smiteSlot, target);
+            }
+
             if (useR && player.Distance(target) < R.Range)
             {
                 if (target != null && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
@@ -122,8 +131,7 @@ namespace BlackWarwick
                     Q.Cast(target, packets());
             }
 
-            if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
-            player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
             {
                 if (GetComboDamage(target) > target.Health)
                 {
@@ -228,6 +236,9 @@ namespace BlackWarwick
             if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
 
+            if (smiteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(smiteSlot) == SpellState.Ready)
+                damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Smite);
+
             return (float)damage;
         }
 
@@ -235,6 +246,35 @@ namespace BlackWarwick
         {
             return menu.Item("miscPacket").GetValue<bool>();
         }
+
+        //Credits to metaphorce
+        public static readonly int[] SmiteRed = { 3715, 3718, 3717, 3716, 3714 };
+        public static readonly int[] SmiteBlue = { 3706, 3710, 3709, 3708, 3707 };
+
+        public static string smitetype()
+        {
+            if (SmiteBlue.Any(Items.HasItem))
+            {
+                return "s5_summonersmiteplayerganker";
+            }
+
+            if (SmiteRed.Any(Items.HasItem))
+            {
+                return "s5_summonersmiteduel";
+            }
+
+            return "summonersmite";
+        }
+
+        public static void setSmiteSlot()
+        {
+            foreach (var spell in ObjectManager.Player.SummonerSpellbook.Spells.Where(spell => String.Equals(spell.Name, smitetype(), StringComparison.CurrentCultureIgnoreCase)))
+            {
+                smiteSlot = spell.Slot;
+                return;
+            }
+        }
+        //Credits to metaphorce
 
         private static void createMenu()
         {
@@ -283,6 +323,7 @@ namespace BlackWarwick
             Menu misc = new Menu("Misc", "misc");
             menu.AddSubMenu(misc);
             misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
+            misc.AddItem(new MenuItem("miscSmite", "Use Smite in Combo").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
             misc.AddItem(new MenuItem("DontUlt", "Dont use R on"));
             misc.AddItem(new MenuItem("sep0", "========="));
@@ -291,7 +332,7 @@ namespace BlackWarwick
             misc.AddItem(new MenuItem("sep1", "========="));
 
 
-            //Damage after combo:
+            //Damage after combo
             var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
             Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
             Utility.HpBarDamageIndicator.Enabled = dmgAfterComboItem.GetValue<bool>();
