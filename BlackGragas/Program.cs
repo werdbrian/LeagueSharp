@@ -23,13 +23,6 @@ namespace BlackGragas
         // Barrel
         private static GameObject QBarrel;
         private static float QBarrelCreateTime;
-        private static bool _canThrowBarrel = true;
-        public static bool CanThrowBarrel
-        {
-            get { return _canThrowBarrel; }
-            set { _canThrowBarrel = value; }
-        }
-
         public static float QBarrelMaxDamageTime { get; set; }
 
         // Menu
@@ -71,6 +64,7 @@ namespace BlackGragas
             Drawing.OnDraw += Drawing_OnDraw;
             GameObject.OnCreate += OnCreateObject;
             GameObject.OnDelete += OnDeleteObject;
+            Interrupter.OnPossibleToInterrupt += Interrupter_OnPossibleToInterrupt;
 
             // Print
             Game.PrintChat(String.Format("<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>{0} Loaded!</font>", champName));
@@ -155,7 +149,6 @@ namespace BlackGragas
             {
                 if (target != null)
                     Utility.DelayAction.Add(500, () => Q.Cast(target, packets()));
-                    QBarrel = new GameObject();
 
                     if (QBarrel != null)
                     {
@@ -164,7 +157,6 @@ namespace BlackGragas
                             if (target.Distance(QBarrel.Position) < Q2.Range)
                             {
                                 Q.Cast(packets());
-                                QBarrel = null;
                             }
                         }
                     }
@@ -192,7 +184,6 @@ namespace BlackGragas
             {
                 if (target != null)
                     Q.Cast(target, packets());
-                    QBarrel = new GameObject();
 
                     if (QBarrel != null)
                     {
@@ -201,7 +192,6 @@ namespace BlackGragas
                             if (target.Distance(QBarrel.Position) < Q2.Range)
                             {
                                 Q.Cast(packets());
-                                QBarrel = null;
                             }
                         }
                     }
@@ -228,7 +218,6 @@ namespace BlackGragas
                 if (Q.IsKillable(target))
                 {
                     Q.Cast(target, packets());
-                    QBarrel = new GameObject();
                 }
 
                 if (QBarrel != null)
@@ -238,11 +227,11 @@ namespace BlackGragas
                         if (target.Distance(QBarrel.Position) < Q2.Range)
                         {
                             Q.Cast(packets());
-                            QBarrel = null;
                         }
                     }
                 }
             }
+
             if (useE && target.Distance(player) < E.Range)
             {
                 if (E.IsKillable(target))
@@ -283,14 +272,12 @@ namespace BlackGragas
                     player.GetSpellDamage(minion, SpellSlot.Q))
                     {
                         Q.Cast(farm.Position, packets());
-                        QBarrel = new GameObject();
                         return;
                     }
                    
                     if (QBarrel != null && QBuff)
                     {
                         Q.Cast(packets());
-                        QBarrel = null;
                     }
                 }
             }
@@ -373,7 +360,7 @@ namespace BlackGragas
             return menu.Item("miscPacket").GetValue<bool>();
         }
 
-        private static void smartUlt()
+        private static void smartUlt() //Kappa
         {
             foreach (var unit in ObjectManager.Get<Obj_AI_Hero>().Where(champ => champ.IsValidTarget(R.Range) && !champ.IsDead && champ.IsEnemy).OrderBy(champ => player.Distance(champ)))
             {
@@ -392,7 +379,6 @@ namespace BlackGragas
             if (QBarrel.Position.CountEnemysInRange(250) >= 1)
             {
                 Q.Cast(packets());
-                QBarrel = null;
             }
         }
 
@@ -400,21 +386,34 @@ namespace BlackGragas
         {
             if (!sender.Name.Contains("Gragas") || !sender.Name.Contains("Q_Ally")) return;
 
-            //Game.PrintChat(sender.Name);
-            //Game.PrintChat("Gragas Q is out!");
             QBarrel = sender;
             QBarrelCreateTime = Game.Time;
             QBarrelMaxDamageTime = QBarrelCreateTime + 2;
-            CanThrowBarrel = false;
         }
+
         private static void OnDeleteObject(GameObject sender, EventArgs args)
         {
             if (!sender.Name.Contains("Gragas") || !sender.Name.Contains("Q_Ally")) return;
 
-            //Game.PrintChat(sender.Name);
-            //Game.PrintChat("Gragas Q exploded!");
             QBarrel = null;
-            CanThrowBarrel = true;
+        }
+
+        private static void Interrupter_OnPossibleToInterrupt(Obj_AI_Base unit, InterruptableSpell spell)
+        {
+            var miscInterruptE = menu.Item("miscInterruptE").GetValue<bool>();
+            var miscInterruptR = menu.Item("miscInterruptR").GetValue<bool>();
+
+            if (spell.DangerLevel != InterruptableDangerLevel.High) return;
+
+            if (miscInterruptE && player.Distance(unit) < E.Range && unit != null)
+            {
+                E.Cast(unit, packets());
+            }
+
+            if (miscInterruptR && player.Distance(unit) < R.Range && unit != null)
+            {
+                R.Cast(unit, packets());
+            }
         }
 
         private static void createMenu()
@@ -470,11 +469,11 @@ namespace BlackGragas
             misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
             misc.AddItem(new MenuItem("miscDetonateQ", "Auto detonate Q").SetValue(true));
-            //misc.AddItem(new MenuItem("miscInterrupt", "Interrupt Spells").SetValue(true));
-            //misc.AddItem(new MenuItem("sep0", "========="));
-            //misc.AddItem(new MenuItem("miscInterruptE", "Interrupt with E").SetValue(true));
-            //misc.AddItem(new MenuItem("miscInterruptR", "Interrupt with R").SetValue(true));
-            //misc.AddItem(new MenuItem("sep1", "========="));
+            misc.AddItem(new MenuItem("miscInterrupt", "Interrupt Spells").SetValue(true));
+            misc.AddItem(new MenuItem("sep0", "========="));
+            misc.AddItem(new MenuItem("miscInterruptE", "Interrupt with E").SetValue(true));
+            misc.AddItem(new MenuItem("miscInterruptR", "Interrupt with R").SetValue(false));
+            misc.AddItem(new MenuItem("sep1", "========="));
 
             //Damage after combo:
             var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
