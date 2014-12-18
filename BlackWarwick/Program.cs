@@ -116,7 +116,7 @@ namespace BlackWarwick
 
             if (target != null && menu.Item("miscSmite").GetValue<bool>() && smiteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(smiteSlot) == SpellState.Ready && useR && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
             {
-                player.SummonerSpellbook.CastSpell(smiteSlot, target);
+                player.Spellbook.CastSpell(smiteSlot, target);
             }
 
             if (useR && player.Distance(target) < R.Range)
@@ -135,7 +135,7 @@ namespace BlackWarwick
             {
                 if (GetComboDamage(target) > target.Health)
                 {
-                    player.SummonerSpellbook.CastSpell(IgniteSlot, target);
+                    player.Spellbook.CastSpell(IgniteSlot, target);
                 }
             }
         }
@@ -267,7 +267,7 @@ namespace BlackWarwick
 
         public static void setSmiteSlot()
         {
-            foreach (var spell in ObjectManager.Player.SummonerSpellbook.Spells.Where(spell => String.Equals(spell.Name, smitetype(), StringComparison.CurrentCultureIgnoreCase)))
+            foreach (var spell in ObjectManager.Player.Spellbook.Spells.Where(spell => String.Equals(spell.Name, smitetype(), StringComparison.CurrentCultureIgnoreCase)))
             {
                 smiteSlot = spell.Slot;
                 return;
