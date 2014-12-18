@@ -148,11 +148,11 @@ namespace BlackKassadin
             }
 
             if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
-            player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
             {
                 if (GetComboDamage(target) > target.Health)
                 {
-                    player.SummonerSpellbook.CastSpell(IgniteSlot, target);
+                    player.Spellbook.CastSpell(IgniteSlot, target);
                 }
             }
         }
@@ -316,7 +316,7 @@ namespace BlackKassadin
             if (E.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.E);
 
-            if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            if (IgniteSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
 
             return (float)damage * (DFG.IsReady() ? 1.2f : 1);

@@ -114,7 +114,7 @@ namespace BlackWarwick
                 W.Cast(player, packets());
             }
 
-            if (target != null && menu.Item("miscSmite").GetValue<bool>() && smiteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(smiteSlot) == SpellState.Ready && useR && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
+            if (target != null && menu.Item("miscSmite").GetValue<bool>() && smiteSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(smiteSlot) == SpellState.Ready && useR && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
             {
                 player.Spellbook.CastSpell(smiteSlot, target);
             }
@@ -131,7 +131,7 @@ namespace BlackWarwick
                     Q.Cast(target, packets());
             }
 
-            if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
             {
                 if (GetComboDamage(target) > target.Health)
                 {
@@ -235,7 +235,7 @@ namespace BlackWarwick
             if (Q.IsReady())
                 damage += player.GetSpellDamage(enemy, SpellSlot.Q);
 
-            if (IgniteSlot != SpellSlot.Unknown && player.SummonerSpellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            if (IgniteSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
                 damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
 
             return (float)damage;
