@@ -18,7 +18,7 @@ namespace BlackWarwick
         // Spells
         private static readonly List<Spell> spellList = new List<Spell>();
         private static Spell Q, W, E, R;
-        private static SpellSlot IgniteSlot, smiteSlot;SummonerDot
+        private static SpellSlot IgniteSlot, smiteSlot;
 
         // Menu
         public static Menu menu;
