@@ -18,7 +18,7 @@ namespace BlackWarwick
         // Spells
         private static readonly List<Spell> spellList = new List<Spell>();
         private static Spell Q, W, E, R;
-        private static SpellSlot IgniteSlot, smiteSlot;
+        private static SpellSlot IgniteSlot, smiteSlot;SummonerDot
 
         // Menu
         public static Menu menu;
@@ -77,7 +77,7 @@ namespace BlackWarwick
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            Obj_AI_Hero target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero target = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
 
             // Combo
             if (menu.SubMenu("combo").Item("comboActive").GetValue<KeyBind>().Active)
@@ -282,7 +282,7 @@ namespace BlackWarwick
             // Target selector
             Menu ts = new Menu("Target Selector", "ts");
             menu.AddSubMenu(ts);
-            SimpleTs.AddToMenu(ts);
+            TargetSelector.AddToMenu(ts);
 
             // Orbwalker
             Menu orbwalk = new Menu("Orbwalking", "orbwalk");

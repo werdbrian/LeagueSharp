@@ -80,7 +80,7 @@ namespace BlackKassadin
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            Obj_AI_Hero target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero target = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
 
             // Combo
             if (menu.SubMenu("combo").Item("comboActive").GetValue<KeyBind>().Active)
@@ -334,7 +334,7 @@ namespace BlackKassadin
             // Target selector
             Menu ts = new Menu("Target Selector", "ts");
             menu.AddSubMenu(ts);
-            SimpleTs.AddToMenu(ts);
+            TargetSelector.AddToMenu(ts);
 
             // Orbwalker
             Menu orbwalk = new Menu("Orbwalking", "orbwalk");
