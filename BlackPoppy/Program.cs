@@ -110,13 +110,13 @@ namespace BlackPoppy
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useR && player.Distance(target) < R.Range && ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(R.Range)) >= menu.Item("comboLogicR").GetValue<Slider>().Value && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
+            if (useR && player.Distance(target.Position) < R.Range && ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(R.Range)) >= menu.Item("comboLogicR").GetValue<Slider>().Value && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
             {
                 if (target != null)
                     UltLogic();
             }
 
-            if (useE && player.Distance(target) < E.Range)
+            if (useE && player.Distance(target.Position) < E.Range)
             {
                 if (target != null)
                     if (useW)
@@ -126,7 +126,7 @@ namespace BlackPoppy
                 ELogic();
             }
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(player, packets());
@@ -147,7 +147,7 @@ namespace BlackPoppy
             Menu harassMenu = menu.SubMenu("harass");
             bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(player, packets());
@@ -220,7 +220,7 @@ namespace BlackPoppy
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && target.Distance(player) < Q.Range)
+            if (useQ && target.Distance(player.Position) < Q.Range)
             {
                 if (Q.IsKillable(target))
                 {
@@ -228,7 +228,7 @@ namespace BlackPoppy
                 }
             }
 
-            if (useE && target.Distance(player) < E.Range)
+            if (useE && target.Distance(player.Position) < E.Range)
             {
                 if (E.IsKillable(target))
                 {
@@ -270,7 +270,7 @@ namespace BlackPoppy
                 {
                     if (minion.IsValidTarget() &&
                     HealthPrediction.GetHealthPrediction(minion,
-                    (int)(player.Distance(minion) * 1000 / 1450)) <
+                    (int)(player.Distance(minion.Position) * 1000 / 1450)) <
                     player.GetSpellDamage(minion, SpellSlot.E))
                     {
                         E.CastOnUnit(minion, packets());

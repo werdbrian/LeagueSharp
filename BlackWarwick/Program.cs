@@ -109,7 +109,7 @@ namespace BlackWarwick
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useW && player.Distance(target) < R.Range)
+            if (useW && player.Distance(target.Position) < R.Range)
             {
                 W.Cast(player, packets());
             }
@@ -119,13 +119,13 @@ namespace BlackWarwick
                 player.Spellbook.CastSpell(smiteSlot, target);
             }
 
-            if (useR && player.Distance(target) < R.Range)
+            if (useR && player.Distance(target.Position) < R.Range)
             {
                 if (target != null && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
                     R.Cast(target, packets());
             }
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
@@ -147,7 +147,7 @@ namespace BlackWarwick
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
@@ -162,7 +162,7 @@ namespace BlackWarwick
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && target.Distance(player) < Q.Range)
+            if (useQ && target.Distance(player.Position) < Q.Range)
             {
                 if (Q.IsKillable(target))
                 {
@@ -170,7 +170,7 @@ namespace BlackWarwick
                 }
             }
 
-            if (useR && target.Distance(player) < R.Range)
+            if (useR && target.Distance(player.Position) < R.Range)
             {
                 if (R.IsKillable(target))
                 {

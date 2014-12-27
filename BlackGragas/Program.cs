@@ -121,31 +121,31 @@ namespace BlackGragas
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useR && player.Distance(target) < R.Range)
+            if (useR && player.Distance(target.Position) < R.Range)
             {
                 if (target != null)
                     smartUlt();
             }
 
-            if (useW && player.Distance(target) < E.Range)
+            if (useW && player.Distance(target.Position) < E.Range)
             {
                 if (target != null)
                     W.Cast(player, packets());
             }
 
-            if (useE && player.Distance(target) < E.Range)
+            if (useE && player.Distance(target.Position) < E.Range)
             {
                 if (target != null)
                     E.Cast(target, packets());
             }
 
-            if (useE && player.Distance(target) > E.Range)
+            if (useE && player.Distance(target.Position) > E.Range)
             {
                 if (target != null)
                     E.Cast(target, packets());
             }
 
-            if (useQ && player.Distance(target) < Q.Range && Q.GetPrediction(target).Hitchance >= HitChance.High)
+            if (useQ && player.Distance(target.Position) < Q.Range && Q.GetPrediction(target).Hitchance >= HitChance.High)
             {
                 if (target != null)
                     Utility.DelayAction.Add(500, () => Q.Cast(target, packets()));
@@ -180,7 +180,7 @@ namespace BlackGragas
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
@@ -197,7 +197,7 @@ namespace BlackGragas
                     }
             }
 
-            if (useE && player.Distance(target) < E.Range)
+            if (useE && player.Distance(target.Position) < E.Range)
             {
                 if (target != null)
                     E.Cast(target, packets());
@@ -213,7 +213,7 @@ namespace BlackGragas
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && target.Distance(player) < Q.Range)
+            if (useQ && target.Distance(player.Position) < Q.Range)
             {
                 if (Q.IsKillable(target))
                 {
@@ -232,7 +232,7 @@ namespace BlackGragas
                 }
             }
 
-            if (useE && target.Distance(player) < E.Range)
+            if (useE && target.Distance(player.Position) < E.Range)
             {
                 if (E.IsKillable(target))
                 {
@@ -240,7 +240,7 @@ namespace BlackGragas
                 }
             }
 
-            if (useR && target.Distance(player) < R.Range)
+            if (useR && target.Distance(player.Position) < R.Range)
             {
                 if (R.IsKillable(target))
                 {
@@ -268,7 +268,7 @@ namespace BlackGragas
                 {
                     if (minion.IsValidTarget() &&
                     HealthPrediction.GetHealthPrediction(minion,
-                    (int)(player.Distance(minion) * 1000 / 1000)) <
+                    (int)(player.Distance(minion.Position) * 1000 / 1000)) <
                     player.GetSpellDamage(minion, SpellSlot.Q))
                     {
                         Q.Cast(farm.Position, packets());
@@ -290,7 +290,7 @@ namespace BlackGragas
                 {
                     if (minion.IsValidTarget() &&
                     HealthPrediction.GetHealthPrediction(minion,
-                    (int)(player.Distance(minion) * 1000 / 1000)) <
+                    (int)(player.Distance(minion.Position) * 1000 / 1000)) <
                     player.GetSpellDamage(minion, SpellSlot.E))
                     {
                         E.Cast(farm.Position, packets());
@@ -362,7 +362,7 @@ namespace BlackGragas
 
         private static void smartUlt() //Kappa
         {
-            foreach (var unit in ObjectManager.Get<Obj_AI_Hero>().Where(champ => champ.IsValidTarget(R.Range) && !champ.IsDead && champ.IsEnemy).OrderBy(champ => player.Distance(champ)))
+            foreach (var unit in ObjectManager.Get<Obj_AI_Hero>().Where(champ => champ.IsValidTarget(R.Range) && !champ.IsDead && champ.IsEnemy).OrderBy(champ => player.Distance(champ.Position)))
             {
                 var RPred = R.GetPrediction(unit);
                 var throwRBehind = RPred.CastPosition - Vector3.Normalize(unit.ServerPosition - player.ServerPosition) * -125;
@@ -405,12 +405,12 @@ namespace BlackGragas
 
             if (spell.DangerLevel != InterruptableDangerLevel.High) return;
 
-            if (miscInterruptE && player.Distance(unit) < E.Range && unit != null)
+            if (miscInterruptE && player.Distance(unit.Position) < E.Range && unit != null)
             {
                 E.Cast(unit, packets());
             }
 
-            if (miscInterruptR && player.Distance(unit) < R.Range && unit != null)
+            if (miscInterruptR && player.Distance(unit.Position) < R.Range && unit != null)
             {
                 R.Cast(unit, packets());
             }

@@ -108,7 +108,7 @@ namespace BlackZilean
             bool useW = comboMenu.Item("comboUseW").GetValue<bool>() && W.IsReady();
             bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
@@ -119,13 +119,13 @@ namespace BlackZilean
                 W.Cast(player, packets());
             }
 
-            if (useE && player.Distance(target) < E.Range)
+            if (useE && player.Distance(target.Position) < E.Range)
             {
                 if (target != null)
                     E.Cast(target, packets());
             }
 
-            if (useE && player.Distance(target) > E.Range)
+            if (useE && player.Distance(target.Position) > E.Range)
             {
                 if (target != null)
                     E.Cast(player, packets());
@@ -147,7 +147,7 @@ namespace BlackZilean
             bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
             bool useW = harassMenu.Item("harassUseW").GetValue<bool>() && W.IsReady();
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
@@ -167,7 +167,7 @@ namespace BlackZilean
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && target.Distance(player) < Q.Range)
+            if (useQ && target.Distance(player.Position) < Q.Range)
             {
                 if (Q.IsKillable(target))
                 {

@@ -124,7 +124,7 @@ namespace BlackKassadin
                 DFG.Cast(target);
             }
 
-            if (useR && player.Distance(target) < R.Range)
+            if (useR && player.Distance(target.Position) < R.Range)
             {
                 if (target != null)
                     R.Cast(target, packets());
@@ -135,13 +135,13 @@ namespace BlackKassadin
                     W.Cast(player, packets());
             }
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
             }
 
-            if (useE && player.Distance(target) < E.Range)
+            if (useE && player.Distance(target.Position) < E.Range)
             {
                 if (target != null)
                     E.Cast(target, packets());
@@ -165,13 +165,13 @@ namespace BlackKassadin
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && player.Distance(target) < Q.Range)
+            if (useQ && player.Distance(target.Position) < Q.Range)
             {
                 if (target != null)
                     Q.Cast(target, packets());
             }
 
-            if (useE && player.Distance(target) < E.Range)
+            if (useE && player.Distance(target.Position) < E.Range)
             {
                 if (target != null)
                     E.Cast(target, packets());
@@ -187,7 +187,7 @@ namespace BlackKassadin
 
             if (target.HasBuffOfType(BuffType.Invulnerability)) return;
 
-            if (useQ && target.Distance(player) < Q.Range)
+            if (useQ && target.Distance(player.Position) < Q.Range)
             {
                 if (Q.IsKillable(target))
                 {
@@ -195,7 +195,7 @@ namespace BlackKassadin
                 }
             }
 
-            if (useE && target.Distance(player) < E.Range)
+            if (useE && target.Distance(player.Position) < E.Range)
             {
                 if (E.IsKillable(target))
                 {
@@ -203,7 +203,7 @@ namespace BlackKassadin
                 }
             }
 
-            if (useR && target.Distance(player) < R.Range)
+            if (useR && target.Distance(player.Position) < R.Range)
             {
                 if (R.IsKillable(target))
                 {
@@ -227,7 +227,7 @@ namespace BlackKassadin
                 {
                     if (minion.IsValidTarget() &&
                     HealthPrediction.GetHealthPrediction(minion,
-                    (int)(player.Distance(minion) * 1000 / 1400)) <
+                    (int)(player.Distance(minion.Position) * 1000 / 1400)) <
                     player.GetSpellDamage(minion, SpellSlot.Q))
                     {
                         Q.CastOnUnit(minion, packets());
@@ -244,7 +244,7 @@ namespace BlackKassadin
                 {
                     if (minion.IsValidTarget() &&
                     HealthPrediction.GetHealthPrediction(minion,
-                    (int)(player.Distance(minion) * 1000 / 1400)) <
+                    (int)(player.Distance(minion.Position) * 1000 / 1400)) <
                     player.GetSpellDamage(minion, SpellSlot.E))
                     {
                         E.Cast(farm.Position, packets());
