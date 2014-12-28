@@ -111,7 +111,10 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Blitzcrank")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
+                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.NotLearned)
+                {
+                    player.Spellbook.LevelSpell(SpellSlot.W);
+                }
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
@@ -128,8 +131,6 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Evelynn")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
-
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
                     if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
@@ -145,7 +146,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Gangplank")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.E);
+                player.Spellbook.LevelSpell(SpellSlot.E);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
@@ -162,7 +163,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Garen")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.Q);
+                player.Spellbook.LevelSpell(SpellSlot.Q);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
                 {
@@ -179,7 +180,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Karma")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.E);
+                player.Spellbook.LevelSpell(SpellSlot.E);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
@@ -196,7 +197,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Kayle")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
+                player.Spellbook.LevelSpell(SpellSlot.W);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
@@ -213,7 +214,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Kennen")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.E);
+                player.Spellbook.LevelSpell(SpellSlot.E);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
@@ -230,7 +231,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Lulu")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
+                player.Spellbook.LevelSpell(SpellSlot.W);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
@@ -247,7 +248,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "MasterYi")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.R);
+                player.Spellbook.LevelSpell(SpellSlot.R);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
@@ -264,7 +265,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Nunu")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
+                player.Spellbook.LevelSpell(SpellSlot.W);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
@@ -281,7 +282,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Poppy")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
+                player.Spellbook.LevelSpell(SpellSlot.W);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
@@ -298,7 +299,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Rammus")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.Q);
+                player.Spellbook.LevelSpell(SpellSlot.Q);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready && !player.HasBuff("PowerBall"))
                 {
@@ -308,14 +309,14 @@ namespace BlackFeeder
                     }
                     else
                     {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                        player.Spellbook.CastSpell(SpellSlot.Q, player);
                     }
                 }
             }
 
             if (player.ChampionName == "Ryze")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.R);
+                player.Spellbook.LevelSpell(SpellSlot.R);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
@@ -332,7 +333,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Shyvana")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
+                player.Spellbook.LevelSpell(SpellSlot.W);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
@@ -349,7 +350,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Sivir")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.R);
+                player.Spellbook.LevelSpell(SpellSlot.R);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
@@ -366,7 +367,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Sona")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.E);
+                player.Spellbook.LevelSpell(SpellSlot.E);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
@@ -383,7 +384,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Volibear")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.Q);
+                player.Spellbook.LevelSpell(SpellSlot.Q);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
                 {
@@ -400,8 +401,8 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Zilean")
             {
-                player.Spellbook.LevelUpSpell(SpellSlot.E);
-                player.Spellbook.LevelUpSpell(SpellSlot.W);
+                player.Spellbook.LevelSpell(SpellSlot.E);
+                player.Spellbook.LevelSpell(SpellSlot.W);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
