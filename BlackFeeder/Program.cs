@@ -111,14 +111,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Blitzcrank")
             {
-<<<<<<< HEAD
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.NotLearned)
-                {
-                    player.Spellbook.LevelSpell(SpellSlot.W);
-                }
-=======
                 player.Spellbook.LevelSpell(SpellSlot.W);
->>>>>>> origin/master
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
@@ -135,11 +128,7 @@ namespace BlackFeeder
 
             if (player.ChampionName == "Evelynn")
             {
-<<<<<<< HEAD
-=======
                 player.Spellbook.LevelSpell(SpellSlot.W);
-
->>>>>>> origin/master
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
                     if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
