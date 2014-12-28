@@ -22,6 +22,8 @@ namespace BlackFeeder
         private static int LastLaugh;
         private static double LastTouchdown;
         private static SpellSlot GhostSlot, ReviveSlot;
+        private static Vector3 PurpleSpawn = new Vector3(14286f, 14382f, 172f);
+        private static Vector3 BlueSpawn = new Vector3(416f, 468f, 182f);
 
         // Menu
         public static Menu menu;
@@ -58,19 +60,6 @@ namespace BlackFeeder
 
         private static void Feederino()
         {
-            Vector3 PurpleSpawn = new Vector3(14286f, 14382f, 172f);
-            Vector3 BlueSpawn = new Vector3(416f, 468f, 182f);
-
-            if (GhostSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(GhostSlot) == SpellState.Ready)
-            {
-                player.Spellbook.CastSpell(GhostSlot);
-            }
-
-            if (ReviveSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(ReviveSlot) == SpellState.Ready)
-            {
-                player.Spellbook.CastSpell(ReviveSlot);
-            }
-
             if (player.Team == GameObjectTeam.Order)
             {
                 player.IssueOrder(GameObjectOrder.MoveTo, PurpleSpawn);
@@ -96,13 +85,44 @@ namespace BlackFeeder
 
         private static void FeedSpells()
         {
+            if (GhostSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(GhostSlot) == SpellState.Ready)
+            {
+                if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                {
+                    return;
+                }
+                else
+                {
+                    player.Spellbook.CastSpell(GhostSlot);
+                }
+            }
+
+            if (ReviveSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(ReviveSlot) == SpellState.Ready)
+            {
+                if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                {
+                    return;
+                }
+                else
+                {
+                    player.Spellbook.CastSpell(ReviveSlot);
+                }
+            }
+
             if (player.ChampionName == "Blitzcrank")
             {
                 player.Spellbook.LevelUpSpell(SpellSlot.W);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
@@ -112,7 +132,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
@@ -122,7 +149,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.E, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.E, player);
+                    }
                 }
             }
 
@@ -132,7 +166,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.Q, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.Q, player);
+                    }
                 }
             }
 
@@ -142,7 +183,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.E, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.E, player);
+                    }
                 }
             }
 
@@ -152,7 +200,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
@@ -162,7 +217,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.E, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.E, player);
+                    }
                 }
             }
 
@@ -172,7 +234,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
@@ -182,7 +251,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.R, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.R, player);
+                    }
                 }
             }
 
@@ -192,7 +268,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
@@ -202,20 +285,31 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
             if (player.ChampionName == "Rammus")
             {
-                if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.NotLearned)
-                {
-                    player.Spellbook.LevelUpSpell(SpellSlot.Q);
-                }
+                player.Spellbook.LevelUpSpell(SpellSlot.Q);
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready && !player.HasBuff("PowerBall"))
                 {
-                    player.Spellbook.CastSpell(SpellSlot.Q, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
@@ -225,7 +319,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.R, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.R, player);
+                    }
                 }
             }
 
@@ -235,7 +336,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
 
@@ -245,7 +353,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.R, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.R, player);
+                    }
                 }
             }
 
@@ -255,7 +370,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.E, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.E, player);
+                    }
                 }
             }
 
@@ -265,7 +387,14 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.Q, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.Q, player);
+                    }
                 }
             }
 
@@ -276,21 +405,32 @@ namespace BlackFeeder
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.E, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.E, player);
+                    }
                 }
 
                 if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready && player.Spellbook.CanUseSpell(SpellSlot.E) != SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(SpellSlot.W, player);
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
                 }
             }
         }
 
         private static void sayShit()
         {
-            Vector3 PurpleSpawn = new Vector3(14286f, 14382f, 172f);
-            Vector3 BlueSpawn = new Vector3(416f, 468f, 182f);
-
             if (player.IsDead && Game.Time - timedead > 80)
             {
                 Game.Say(deaths[deathcounter]);
