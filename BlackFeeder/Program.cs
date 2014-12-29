@@ -380,6 +380,23 @@ namespace BlackFeeder
                 }
             }
 
+            if (player.ChampionName == "Teemo")
+            {
+                player.Spellbook.LevelSpell(SpellSlot.W);
+
+                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                {
+                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        player.Spellbook.CastSpell(SpellSlot.W, player);
+                    }
+                }
+            }
+
             if (player.ChampionName == "Volibear")
             {
                 player.Spellbook.LevelSpell(SpellSlot.Q);
