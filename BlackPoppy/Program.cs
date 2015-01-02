@@ -1,29 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
-using System.Text;
 using LeagueSharp;
 using LeagueSharp.Common;
-using SharpDX;
-using Color = System.Drawing.Color;
 
 namespace BlackPoppy
 {
-    class Program
+    internal class Program
     {
         // Generic
-        public static readonly string champName = "Poppy";
-        private static readonly Obj_AI_Hero player = ObjectManager.Player;
-
+        public static readonly string ChampName = "Poppy";
+        private static readonly Obj_AI_Hero Player = ObjectManager.Player;
         // Spells
-        private static readonly List<Spell> spellList = new List<Spell>();
-        private static Spell Q, W, E, R;
-        private static SpellSlot IgniteSlot;
-
+        private static readonly List<Spell> SpellList = new List<Spell>();
+        private static Spell _q, _w, _e, _r;
+        private static SpellSlot _igniteSlot;
         // Menu
-        public static Menu menu;
-
-        private static Orbwalking.Orbwalker OW;
+        public static Menu Menu;
+        private static Orbwalking.Orbwalker _ow;
 
         public static void Main(string[] args)
         {
@@ -34,138 +29,154 @@ namespace BlackPoppy
         private static void Game_OnGameLoad(EventArgs args)
         {
             //Champ validation
-            if (player.ChampionName != champName) return;
+            if (Player.ChampionName != ChampName)
+            {
+                return;
+            }
 
             //Define spells
-            Q = new Spell(SpellSlot.Q, 250f);
-            W = new Spell(SpellSlot.W, 250f);
-            E = new Spell(SpellSlot.E, 500f);
-            R = new Spell(SpellSlot.R, 850f);
-            spellList.AddRange(new[] { Q, W, E, R });
+            _q = new Spell(SpellSlot.Q, 250f);
+            _w = new Spell(SpellSlot.W, 250f);
+            _e = new Spell(SpellSlot.E, 500f);
+            _r = new Spell(SpellSlot.R, 850f);
+            SpellList.AddRange(new[] {_q, _w, _e, _r});
 
-            IgniteSlot = player.GetSpellSlot("SummonerDot");
+            _igniteSlot = Player.GetSpellSlot("SummonerDot");
 
             // Finetune spells
-            E.SetTargetted(0.5f, 1450f);
+            _e.SetTargetted(0.5f, 1450f);
 
             // Create menu
-            createMenu();
+            CreateMenu();
 
             // Register events
             Game.OnGameUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
 
             // Print
-            Game.PrintChat(String.Format("<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>{0} Loaded!</font>", champName));
+            Game.PrintChat(
+                String.Format("<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>{0} Loaded!</font>",
+                    ChampName));
         }
 
         private static void Drawing_OnDraw(EventArgs args)
         {
             // Spell ranges
-            foreach (var spell in spellList)
+            foreach (var spell in SpellList)
             {
                 // Regular spell ranges
-                var circleEntry = menu.Item("drawRange" + spell.Slot).GetValue<Circle>();
+                var circleEntry = Menu.Item("drawRange" + spell.Slot).GetValue<Circle>();
                 if (circleEntry.Active)
-                    Utility.DrawCircle(player.Position, spell.Range, circleEntry.Color);
+                {
+                    Utility.DrawCircle(Player.Position, spell.Range, circleEntry.Color);
+                }
             }
         }
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            Obj_AI_Hero target = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_r.Range, TargetSelector.DamageType.Magical);
 
             // Combo
-            if (menu.SubMenu("combo").Item("comboActive").GetValue<KeyBind>().Active)
+            if (Menu.SubMenu("combo").Item("comboActive").GetValue<KeyBind>().Active)
+            {
                 OnCombo(target);
+            }
 
             // Harass
-            if (menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
-               (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) >
-                menu.Item("harassMana").GetValue<Slider>().Value)
+            if (Menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
+                (ObjectManager.Player.Mana/ObjectManager.Player.MaxMana*100) >
+                Menu.Item("harassMana").GetValue<Slider>().Value)
+            {
                 OnHarass(target);
+            }
 
             // WaveClear
-            if (menu.SubMenu("waveclear").Item("wcActive").GetValue<KeyBind>().Active &&
-            (player.Mana / player.MaxMana * 100) >
-            menu.Item("wcMana").GetValue<Slider>().Value)
-                waveclear();
+            if (Menu.SubMenu("waveclear").Item("wcActive").GetValue<KeyBind>().Active &&
+                (Player.Mana/Player.MaxMana*100) >
+                Menu.Item("wcMana").GetValue<Slider>().Value)
+            {
+                WaveClear();
+            }
 
             // Misc
-            if (menu.SubMenu("misc").Item("miscEscapeToMouse").GetValue<KeyBind>().Active)
+            if (Menu.SubMenu("misc").Item("miscEscapeToMouse").GetValue<KeyBind>().Active)
+            {
                 EscapeToMouse();
+            }
 
             // Killsteal
             Killsteal(target);
-
         }
 
         private static void OnCombo(Obj_AI_Hero target)
         {
-            Menu comboMenu = menu.SubMenu("combo");
-            bool useQ = comboMenu.Item("comboUseQ").GetValue<bool>() && Q.IsReady();
-            bool useW = comboMenu.Item("comboUseW").GetValue<bool>() && W.IsReady();
-            bool useE = comboMenu.Item("comboUseE").GetValue<bool>() && E.IsReady();
-            bool useR = comboMenu.Item("comboUseR").GetValue<bool>() && R.IsReady();
+            var comboMenu = Menu.SubMenu("combo");
+            var useQ = comboMenu.Item("comboUseQ").GetValue<bool>() && _q.IsReady();
+            var useW = comboMenu.Item("comboUseW").GetValue<bool>() && _w.IsReady();
+            var useE = comboMenu.Item("comboUseE").GetValue<bool>() && _e.IsReady();
+            var useR = comboMenu.Item("comboUseR").GetValue<bool>() && _r.IsReady();
 
-            if (target.HasBuffOfType(BuffType.Invulnerability)) return;
-
-            if (useR && player.Distance(target.Position) < R.Range && ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(R.Range)) >= menu.Item("comboLogicR").GetValue<Slider>().Value && menu.Item("DontUlt" + target.BaseSkinName) != null && menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
+            if (target.HasBuffOfType(BuffType.Invulnerability))
             {
-                if (target != null)
-                    UltLogic();
+                return;
             }
 
-            if (useE && player.Distance(target.Position) < E.Range)
+            if (useR && Player.Distance(target.Position) < _r.Range &&
+                ObjectManager.Get<Obj_AI_Hero>().Count(hero => hero.IsValidTarget(_r.Range)) >=
+                Menu.Item("comboLogicR").GetValue<Slider>().Value && Menu.Item("DontUlt" + target.BaseSkinName) != null &&
+                Menu.Item("DontUlt" + target.BaseSkinName).GetValue<bool>() == false)
             {
-                if (target != null)
-                    if (useW)
-                    {
-                        W.Cast(player, packets());
-                    }
+                UltLogic();
+            }
+
+            if (useE && Player.Distance(target.Position) < _e.Range)
+            {
+                if (useW)
+                {
+                    _w.Cast(Player, Packets());
+                }
                 ELogic();
             }
 
-            if (useQ && player.Distance(target.Position) < Q.Range)
+            if (useQ && Player.Distance(target.Position) < _q.Range)
             {
-                if (target != null)
-                    Q.Cast(player, packets());
+                _q.Cast(Player, Packets());
             }
 
-            if (target != null && menu.Item("miscIgnite").GetValue<bool>() && IgniteSlot != SpellSlot.Unknown &&
-            player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
+            if (!Menu.Item("miscIgnite").GetValue<bool>() || _igniteSlot == SpellSlot.Unknown ||
+                Player.Spellbook.CanUseSpell(_igniteSlot) != SpellState.Ready)
             {
-                if (GetComboDamage(target) > target.Health)
-                {
-                    player.Spellbook.CastSpell(IgniteSlot, target);
-                }
+                return;
+            }
+
+            if (GetComboDamage(target) > target.Health)
+            {
+                Player.Spellbook.CastSpell(_igniteSlot, target);
             }
         }
 
         private static void OnHarass(Obj_AI_Hero target)
         {
-            Menu harassMenu = menu.SubMenu("harass");
-            bool useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && Q.IsReady();
+            var harassMenu = Menu.SubMenu("harass");
+            var useQ = harassMenu.Item("harassUseQ").GetValue<bool>() && _q.IsReady();
 
-            if (useQ && player.Distance(target.Position) < Q.Range)
+            if (useQ && Player.Distance(target.Position) < _q.Range)
             {
-                if (target != null)
-                    Q.Cast(player, packets());
+                _q.Cast(Player, Packets());
             }
-
         }
 
         private static void EscapeToMouse()
         {
-            Menu miscMenu = menu.SubMenu("misc");
-            bool useW = miscMenu.Item("miscUseW").GetValue<bool>() && W.IsReady();
+            var miscMenu = Menu.SubMenu("misc");
+            var useW = miscMenu.Item("miscUseW").GetValue<bool>() && _w.IsReady();
 
             if (useW)
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
-                W.Cast(player, packets());
+                _w.Cast(Player, Packets());
             }
-
             else
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
@@ -175,7 +186,7 @@ namespace BlackPoppy
         private static void UltLogic()
         {
             Obj_AI_Hero newtarget = null;
-            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(R.Range)))
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(_r.Range)))
             {
                 if (newtarget == null)
                 {
@@ -189,163 +200,174 @@ namespace BlackPoppy
                     }
                 }
             }
-            R.Cast(newtarget, packets());
+            _r.Cast(newtarget, Packets());
         }
 
         private static void ELogic()
         {
-            foreach (var hero in from hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(E.Range))
-                                 let prediction = E.GetPrediction(hero)
-                                 where NavMesh.GetCollisionFlags(
-                                 prediction.UnitPosition.To2D()
-                                 .Extend(ObjectManager.Player.ServerPosition.To2D(), -300)
-                                 .To3D())
-                                 .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
-                                 prediction.UnitPosition.To2D()
-                                 .Extend(ObjectManager.Player.ServerPosition.To2D(),
-                                 -(300 / 2))
-                                 .To3D())
-                                 .HasFlag(CollisionFlags.Wall)
-                                 select hero)
+            foreach (
+                var hero in from hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(_e.Range))
+                    let prediction = _e.GetPrediction(hero)
+                    where NavMesh.GetCollisionFlags(
+                        prediction.UnitPosition.To2D()
+                            .Extend(ObjectManager.Player.ServerPosition.To2D(), -300)
+                            .To3D())
+                        .HasFlag(CollisionFlags.Wall) || NavMesh.GetCollisionFlags(
+                            prediction.UnitPosition.To2D()
+                                .Extend(ObjectManager.Player.ServerPosition.To2D(),
+                                    -(300/2))
+                                .To3D())
+                            .HasFlag(CollisionFlags.Wall)
+                    select hero)
             {
-                E.Cast(hero, packets());
+                _e.Cast(hero, Packets());
             }
         }
 
         private static void Killsteal(Obj_AI_Hero target)
         {
-            Menu killstealMenu = menu.SubMenu("killsteal");
-            bool useQ = killstealMenu.Item("killstealUseQ").GetValue<bool>() && Q.IsReady();
-            bool useE = killstealMenu.Item("killstealUseE").GetValue<bool>() && E.IsReady();
+            var killstealMenu = Menu.SubMenu("killsteal");
+            var useQ = killstealMenu.Item("killstealUseQ").GetValue<bool>() && _q.IsReady();
+            var useE = killstealMenu.Item("killstealUseE").GetValue<bool>() && _e.IsReady();
 
-            if (target.HasBuffOfType(BuffType.Invulnerability)) return;
-
-            if (useQ && target.Distance(player.Position) < Q.Range)
+            if (target.HasBuffOfType(BuffType.Invulnerability))
             {
-                if (Q.IsKillable(target))
+                return;
+            }
+
+            if (useQ && target.Distance(Player.Position) < _q.Range)
+            {
+                if (_q.IsKillable(target))
                 {
-                    Q.Cast(player, packets());
+                    _q.Cast(Player, Packets());
                 }
             }
 
-            if (useE && target.Distance(player.Position) < E.Range)
+            if (!useE || !(target.Distance(Player.Position) < _e.Range))
             {
-                if (E.IsKillable(target))
-                {
-                    E.Cast(target, packets());
-                }
+                return;
+            }
+
+            if (_e.IsKillable(target))
+            {
+                _e.Cast(target, Packets());
             }
         }
 
-        private static void waveclear()
+        private static void WaveClear()
         {
-            Menu waveclearMenu = menu.SubMenu("waveclear");
-            bool useQ = waveclearMenu.Item("wcUseQ").GetValue<bool>() && Q.IsReady();
-            bool useW = waveclearMenu.Item("wcUseW").GetValue<bool>() && W.IsReady();
-            bool useE = waveclearMenu.Item("wcUseE").GetValue<bool>() && E.IsReady();
+            var waveclearMenu = Menu.SubMenu("waveclear");
+            var useQ = waveclearMenu.Item("wcUseQ").GetValue<bool>() && _q.IsReady();
+            var useW = waveclearMenu.Item("wcUseW").GetValue<bool>() && _w.IsReady();
+            var useE = waveclearMenu.Item("wcUseE").GetValue<bool>() && _e.IsReady();
 
-            var allMinionsQ = MinionManager.GetMinions(player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Enemy);
+            var allMinionsQ = MinionManager.GetMinions(Player.ServerPosition, _q.Range);
 
             if (useQ)
             {
-                foreach (var minion in allMinionsQ)
+                if (allMinionsQ.Any(minion => minion.IsValidTarget() &&
+                                              _q.IsKillable(minion)))
                 {
-                    if (minion.IsValidTarget() &&
-                    Q.IsKillable(minion))
-                    {
-                        Q.CastOnUnit(player, packets());
-                        return;
-                    }
+                    _q.CastOnUnit(Player, Packets());
+                    return;
                 }
             }
 
             if (useW && allMinionsQ.Count > 1)
             {
-                W.Cast(player, packets());
+                _w.Cast(Player, Packets());
             }
 
             if (useE)
             {
-                foreach (var minion in allMinionsQ)
+                foreach (var minion in allMinionsQ.Where(minion => minion.IsValidTarget() &&
+                                                                   HealthPrediction.GetHealthPrediction(minion,
+                                                                       (int)
+                                                                           (Player.Distance(minion.Position)*1000/1450)) <
+                                                                   Player.GetSpellDamage(minion, SpellSlot.E)))
                 {
-                    if (minion.IsValidTarget() &&
-                    HealthPrediction.GetHealthPrediction(minion,
-                    (int)(player.Distance(minion.Position) * 1000 / 1450)) <
-                    player.GetSpellDamage(minion, SpellSlot.E))
-                    {
-                        E.CastOnUnit(minion, packets());
-                        return;
-                    }
+                    _e.CastOnUnit(minion, Packets());
+                    return;
                 }
             }
 
-            var jcreeps = MinionManager.GetMinions(player.ServerPosition, E.Range, MinionTypes.All,
-            MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
-
-            if (jcreeps.Count > 0)
+            var jcreeps = MinionManager.GetMinions(Player.ServerPosition, _e.Range, MinionTypes.All,
+                MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            if (jcreeps.Count <= 0)
             {
-                var jcreep = jcreeps[0];
+                return;
+            }
 
-                if (useQ)
-                {
-                    Q.Cast(player, packets());
-                }
+            var jcreep = jcreeps[0];
+            if (useQ)
+            {
+                _q.Cast(Player, Packets());
+            }
 
-                if (useW)
-                {
-                    W.Cast(player, packets());
-                }
+            if (useW)
+            {
+                _w.Cast(Player, Packets());
+            }
 
-                if (useE)
-                {
-                    E.Cast(jcreep, packets());
-                }
+            if (useE)
+            {
+                _e.Cast(jcreep, Packets());
             }
         }
 
         private static float GetComboDamage(Obj_AI_Base enemy)
         {
             var damage = 0d;
-            if (R.IsReady())
-                damage += player.GetSpellDamage(enemy, SpellSlot.R);
+            if (_r.IsReady())
+            {
+                damage += Player.GetSpellDamage(enemy, SpellSlot.R);
+            }
 
-            if (W.IsReady())
-                damage += player.GetSpellDamage(enemy, SpellSlot.W);
+            if (_w.IsReady())
+            {
+                damage += Player.GetSpellDamage(enemy, SpellSlot.W);
+            }
 
-            if (E.IsReady())
-                damage += player.GetSpellDamage(enemy, SpellSlot.E);
+            if (_e.IsReady())
+            {
+                damage += Player.GetSpellDamage(enemy, SpellSlot.E);
+            }
 
-            if (Q.IsReady())
-                damage += player.GetSpellDamage(enemy, SpellSlot.Q);
+            if (_q.IsReady())
+            {
+                damage += Player.GetSpellDamage(enemy, SpellSlot.Q);
+            }
 
-            if (IgniteSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(IgniteSlot) == SpellState.Ready)
-                damage += player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
+            if (_igniteSlot != SpellSlot.Unknown && Player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+            {
+                damage += Player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
+            }
 
-            return (float)damage;
+            return (float) damage;
         }
 
-        private static bool packets()
+        private static bool Packets()
         {
-            return menu.Item("miscPacket").GetValue<bool>();
+            return Menu.Item("miscPacket").GetValue<bool>();
         }
 
-        private static void createMenu()
+        private static void CreateMenu()
         {
-            menu = new Menu("Black" + champName, "black" + champName, true);
+            Menu = new Menu("Black" + ChampName, "black" + ChampName, true);
 
             // Target selector
-            Menu ts = new Menu("Target Selector", "ts");
-            menu.AddSubMenu(ts);
+            var ts = new Menu("Target Selector", "ts");
+            Menu.AddSubMenu(ts);
             TargetSelector.AddToMenu(ts);
 
             // Orbwalker
-            Menu orbwalk = new Menu("Orbwalking", "orbwalk");
-            menu.AddSubMenu(orbwalk);
-            OW = new Orbwalking.Orbwalker(orbwalk);
+            var orbwalk = new Menu("Orbwalking", "orbwalk");
+            Menu.AddSubMenu(orbwalk);
+            _ow = new Orbwalking.Orbwalker(orbwalk);
 
             // Combo
-            Menu combo = new Menu("Combo", "combo");
-            menu.AddSubMenu(combo);
+            var combo = new Menu("Combo", "combo");
+            Menu.AddSubMenu(combo);
             combo.AddItem(new MenuItem("comboUseQ", "Use Q").SetValue(true));
             combo.AddItem(new MenuItem("comboUseW", "Use W").SetValue(true));
             combo.AddItem(new MenuItem("comboUseE", "Use E").SetValue(true));
@@ -354,15 +376,15 @@ namespace BlackPoppy
             combo.AddItem(new MenuItem("comboActive", "Combo active!").SetValue(new KeyBind(32, KeyBindType.Press)));
 
             // Harass
-            Menu harass = new Menu("Harass", "harass");
-            menu.AddSubMenu(harass);
+            var harass = new Menu("Harass", "harass");
+            Menu.AddSubMenu(harass);
             harass.AddItem(new MenuItem("harassUseQ", "Use Q").SetValue(true));
             harass.AddItem(new MenuItem("harassMana", "Mana To Harass").SetValue(new Slider(40, 100, 0)));
             harass.AddItem(new MenuItem("harassActive", "Harass active!").SetValue(new KeyBind('C', KeyBindType.Press)));
 
             // WaveClear
-            Menu waveclear = new Menu("Waveclear", "waveclear");
-            menu.AddSubMenu(waveclear);
+            var waveclear = new Menu("Waveclear", "waveclear");
+            Menu.AddSubMenu(waveclear);
             waveclear.AddItem(new MenuItem("wcUseQ", "Use Q").SetValue(true));
             waveclear.AddItem(new MenuItem("wcUseW", "Use W").SetValue(true));
             waveclear.AddItem(new MenuItem("wcUseE", "Use E").SetValue(true));
@@ -370,42 +392,46 @@ namespace BlackPoppy
             waveclear.AddItem(new MenuItem("wcActive", "Waveclear active!").SetValue(new KeyBind('V', KeyBindType.Press)));
 
             // Killsteal
-            Menu killsteal = new Menu("Killsteal", "killsteal");
-            menu.AddSubMenu(killsteal);
+            var killsteal = new Menu("Killsteal", "killsteal");
+            Menu.AddSubMenu(killsteal);
             killsteal.AddItem(new MenuItem("killstealUseQ", "Use Q").SetValue(true));
             killsteal.AddItem(new MenuItem("killstealUseE", "Use E").SetValue(true));
 
             // Misc
-            Menu misc = new Menu("Misc", "misc");
-            menu.AddSubMenu(misc);
+            var misc = new Menu("Misc", "misc");
+            Menu.AddSubMenu(misc);
             misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
-            misc.AddItem(new MenuItem("miscEscapeToMouse", "Escape to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
+            misc.AddItem(
+                new MenuItem("miscEscapeToMouse", "Escape to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
             misc.AddItem(new MenuItem("miscUseW", "Use W in Escape to mouse").SetValue(true));
             misc.AddItem(new MenuItem("DontUlt", "Dont use R on"));
             misc.AddItem(new MenuItem("sep0", "========="));
-            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != player.Team))
+            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
+            {
                 misc.AddItem(new MenuItem("DontUlt" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
+            }
             misc.AddItem(new MenuItem("sep1", "========="));
 
             //Damage after combo:
             var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
             Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
             Utility.HpBarDamageIndicator.Enabled = dmgAfterComboItem.GetValue<bool>();
-            dmgAfterComboItem.ValueChanged += delegate(object sender, OnValueChangeEventArgs eventArgs)
-            {
-                Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
-            };
+            dmgAfterComboItem.ValueChanged +=
+                delegate(object sender, OnValueChangeEventArgs eventArgs)
+                {
+                    Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+                };
 
             // Drawings
-            Menu drawings = new Menu("Drawings", "drawings");
-            menu.AddSubMenu(drawings);
+            var drawings = new Menu("Drawings", "drawings");
+            Menu.AddSubMenu(drawings);
             drawings.AddItem(new MenuItem("drawRangeE", "E range").SetValue(new Circle(false, Color.Aquamarine)));
             drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
             drawings.AddItem(dmgAfterComboItem);
 
             // Finalizing
-            menu.AddToMainMenu();
+            Menu.AddToMainMenu();
         }
     }
 }

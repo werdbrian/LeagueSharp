@@ -1,32 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using LeagueSharp;
 using LeagueSharp.Common;
 using SharpDX;
-using Color = System.Drawing.Color;
 
 namespace BlackFeeder
 {
-    class Program
+    internal class Program
     {
         // Generic
-        private static readonly Obj_AI_Hero player = ObjectManager.Player;
-
+        private static readonly Obj_AI_Hero Player = ObjectManager.Player;
         // Shit
-        private static bool boughtItemOne, boughtItemTwo, boughtItemThree = false;
-        private static string[] deaths;
-        private static double timedead;
-        private static int deathcounter;
-        private static int LastLaugh;
-        private static double LastTouchdown;
-        private static SpellSlot GhostSlot, ReviveSlot;
-        private static Vector3 PurpleSpawn = new Vector3(14286f, 14382f, 172f);
-        private static Vector3 BlueSpawn = new Vector3(416f, 468f, 182f);
-
+        private static bool _boughtItemOne, _boughtItemTwo, _boughtItemThree;
+        private static string[] _deaths;
+        private static double _timeDead;
+        private static int _deathCounter;
+        private static int _lastLaugh;
+        private static double _lastTouchdown;
+        private static SpellSlot _ghostSlot, _reviveSlot;
+        private static readonly Vector3 PurpleSpawn = new Vector3(14286f, 14382f, 172f);
+        private static readonly Vector3 BlueSpawn = new Vector3(416f, 468f, 182f);
         // Menu
-        public static Menu menu;
+        public static Menu Menu;
 
         public static void Main(string[] args)
         {
@@ -37,480 +31,437 @@ namespace BlackFeeder
         private static void Game_OnGameLoad(EventArgs args)
         {
             // Create menu
-            createMenu();
+            CreateMenu();
 
             // Shit
-            deaths = new[] { "XD", "kek", "sorry lag", "gg", "help pls", "nooob wtf", "team???", "gg my team sucks", "matchmaking sucks", "i can't carry dis", "wtf how?", "wow rito nerf pls", "report enemys for drophacks", "tilidin y u do dis", "kappa"};
-            GhostSlot = player.GetSpellSlot("SummonerHaste");
-            ReviveSlot = player.GetSpellSlot("SummonerRevive");
+            _deaths = new[]
+            {
+                "XD", "kek", "sorry lag", "gg", "help pls", "nooob wtf", "team???", "gg my team sucks",
+                "matchmaking sucks",
+                "i can't carry dis", "wtf how?", "wow rito nerf pls", "report enemys for drophacks",
+                "tilidin y u do dis", "kappa"
+            };
+            _ghostSlot = Player.GetSpellSlot("SummonerHaste");
+            _reviveSlot = Player.GetSpellSlot("SummonerRevive");
 
             // Register events
             Game.OnGameUpdate += Game_OnGameUpdate;
             Game.OnGameEnd += OnGameEnd;
 
             // Print
-            Game.PrintChat(String.Format("<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>BlackFeeder Loaded!</font>"));
+            Game.PrintChat(
+                String.Format("<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>BlackFeeder Loaded!</font>"));
         }
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            if (menu.Item("feedingActive").GetValue<bool>())
+            if (Menu.Item("feedingActive").GetValue<bool>())
+            {
                 Feederino();
+            }
         }
 
         private static void Feederino()
         {
-            if (player.Team == GameObjectTeam.Order)
+            if (Player.Team == GameObjectTeam.Order)
             {
-                player.IssueOrder(GameObjectOrder.MoveTo, PurpleSpawn);
+                Player.IssueOrder(GameObjectOrder.MoveTo, PurpleSpawn);
             }
 
-            if (player.Team == GameObjectTeam.Chaos)
+            if (Player.Team == GameObjectTeam.Chaos)
             {
-                player.IssueOrder(GameObjectOrder.MoveTo, BlueSpawn);
+                Player.IssueOrder(GameObjectOrder.MoveTo, BlueSpawn);
             }
 
-            if (menu.Item("useSkillsActive").GetValue<bool>())
+            if (Menu.Item("useSkillsActive").GetValue<bool>())
+            {
                 FeedSpells();
+            }
 
-            if (menu.Item("sayShitActive").GetValue<bool>())
-                sayShit();
+            if (Menu.Item("sayShitActive").GetValue<bool>())
+            {
+                SayShit();
+            }
 
-            if (menu.Item("laughingActive").GetValue<bool>())
+            if (Menu.Item("laughingActive").GetValue<bool>())
+            {
                 Laughing();
+            }
 
-            if (menu.Item("buyItemsActive").GetValue<bool>())
+            if (Menu.Item("buyItemsActive").GetValue<bool>())
+            {
                 BuyItems();
+            }
         }
 
         private static void FeedSpells()
         {
-            if (GhostSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(GhostSlot) == SpellState.Ready)
+            if (_ghostSlot != SpellSlot.Unknown && Player.Spellbook.CanUseSpell(_ghostSlot) == SpellState.Ready)
             {
-                if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                 {
                     return;
                 }
-                else
-                {
-                    player.Spellbook.CastSpell(GhostSlot);
-                }
+
+                Player.Spellbook.CastSpell(_ghostSlot);
             }
 
-            if (ReviveSlot != SpellSlot.Unknown && player.Spellbook.CanUseSpell(ReviveSlot) == SpellState.Ready)
+            if (_reviveSlot != SpellSlot.Unknown && Player.Spellbook.CanUseSpell(_reviveSlot) == SpellState.Ready)
             {
-                if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                 {
                     return;
                 }
-                else
+
+                Player.Spellbook.CastSpell(_reviveSlot);
+            }
+
+            if (Player.ChampionName == "Blitzcrank")
+            {
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    player.Spellbook.CastSpell(ReviveSlot);
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
+                    {
+                        return;
+                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Blitzcrank")
+            if (Player.ChampionName == "Evelynn")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Evelynn")
+            if (Player.ChampionName == "Gangplank")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.E);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.E, Player);
                 }
             }
 
-            if (player.ChampionName == "Gangplank")
+            if (Player.ChampionName == "Garen")
             {
-                player.Spellbook.LevelSpell(SpellSlot.E);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.Q);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.E, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.Q, Player);
                 }
             }
 
-            if (player.ChampionName == "Garen")
+            if (Player.ChampionName == "Karma")
             {
-                player.Spellbook.LevelSpell(SpellSlot.Q);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.E);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.Q, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.E, Player);
                 }
             }
 
-            if (player.ChampionName == "Karma")
+            if (Player.ChampionName == "Kayle")
             {
-                player.Spellbook.LevelSpell(SpellSlot.E);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.E, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Kayle")
+            if (Player.ChampionName == "Kennen")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.E);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.E, Player);
                 }
             }
 
-            if (player.ChampionName == "Kennen")
+            if (Player.ChampionName == "Lulu")
             {
-                player.Spellbook.LevelSpell(SpellSlot.E);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.E, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Lulu")
+            if (Player.ChampionName == "MasterYi")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.R);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.R, Player);
                 }
             }
 
-            if (player.ChampionName == "MasterYi")
+            if (Player.ChampionName == "Nunu")
             {
-                player.Spellbook.LevelSpell(SpellSlot.R);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.R, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Nunu")
+            if (Player.ChampionName == "Poppy")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Poppy")
+            if (Player.ChampionName == "Rammus")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.Q);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready && !Player.HasBuff("PowerBall"))
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.Q, Player);
                 }
             }
 
-            if (player.ChampionName == "Rammus")
+            if (Player.ChampionName == "Ryze")
             {
-                player.Spellbook.LevelSpell(SpellSlot.Q);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready && !player.HasBuff("PowerBall"))
+                Player.Spellbook.LevelSpell(SpellSlot.R);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.Q, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.R, Player);
                 }
             }
 
-            if (player.ChampionName == "Ryze")
+            if (Player.ChampionName == "Shyvana")
             {
-                player.Spellbook.LevelSpell(SpellSlot.R);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.R, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Shyvana")
+            if (Player.ChampionName == "Sivir")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.R);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.R, Player);
                 }
             }
 
-            if (player.ChampionName == "Sivir")
+            if (Player.ChampionName == "Sona")
             {
-                player.Spellbook.LevelSpell(SpellSlot.R);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.R) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.E);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.R, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.E, Player);
                 }
             }
 
-            if (player.ChampionName == "Sona")
+            if (Player.ChampionName == "Teemo")
             {
-                player.Spellbook.LevelSpell(SpellSlot.E);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.E, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
 
-            if (player.ChampionName == "Teemo")
+            if (Player.ChampionName == "Volibear")
             {
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.Q);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.Q, Player);
                 }
             }
 
-            if (player.ChampionName == "Volibear")
+            if (Player.ChampionName == "Zilean")
             {
-                player.Spellbook.LevelSpell(SpellSlot.Q);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.Q) == SpellState.Ready)
+                Player.Spellbook.LevelSpell(SpellSlot.E);
+                Player.Spellbook.LevelSpell(SpellSlot.W);
+                if (Player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.Q, player);
-                    }
-                }
-            }
 
-            if (player.ChampionName == "Zilean")
-            {
-                player.Spellbook.LevelSpell(SpellSlot.E);
-                player.Spellbook.LevelSpell(SpellSlot.W);
-
-                if (player.Spellbook.CanUseSpell(SpellSlot.E) == SpellState.Ready)
-                {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.E, player);
-                    }
+                    Player.Spellbook.CastSpell(SpellSlot.E, Player);
                 }
 
-                if (player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready && player.Spellbook.CanUseSpell(SpellSlot.E) != SpellState.Ready)
+                if (Player.Spellbook.CanUseSpell(SpellSlot.W) == SpellState.Ready &&
+                    Player.Spellbook.CanUseSpell(SpellSlot.E) != SpellState.Ready)
                 {
-                    if (player.Distance(PurpleSpawn) < 600 | player.Distance(BlueSpawn) < 600)
+                    if (Player.Distance(PurpleSpawn) < 600 | Player.Distance(BlueSpawn) < 600)
                     {
                         return;
                     }
-                    else
-                    {
-                        player.Spellbook.CastSpell(SpellSlot.W, player);
-                    }
+
+                    Player.Spellbook.CastSpell(SpellSlot.W, Player);
                 }
             }
         }
 
-        private static void sayShit()
+        private static void SayShit()
         {
-            if (player.IsDead && Game.Time - timedead > 80)
+            if (Player.IsDead && Game.Time - _timeDead > 80)
             {
-                Game.Say(deaths[deathcounter]);
-                deathcounter++;
-                timedead = Game.Time;
+                Game.Say(_deaths[_deathCounter]);
+                _deathCounter++;
+                _timeDead = Game.Time;
             }
 
-            if (player.Team == GameObjectTeam.Chaos && player.Distance(BlueSpawn) < 600)
+            if (Player.Team == GameObjectTeam.Chaos && Player.Distance(BlueSpawn) < 600)
             {
-                if (Game.Time - LastTouchdown > 80)
+                if (Game.Time - _lastTouchdown > 80)
                 {
                     Game.Say("/all TOUCHDOWN!");
-                    LastTouchdown = Game.Time;
+                    _lastTouchdown = Game.Time;
                 }
             }
 
-            if (player.Team == GameObjectTeam.Order && player.Distance(PurpleSpawn) < 600)
+            if (Player.Team == GameObjectTeam.Order && Player.Distance(PurpleSpawn) < 600)
             {
-                if (Game.Time - LastTouchdown > 80)
+                if (Game.Time - _lastTouchdown > 80)
                 {
                     Game.Say("/all TOUCHDOWN!");
-                    LastTouchdown = Game.Time;
+                    _lastTouchdown = Game.Time;
                 }
             }
-
         }
 
         private static void Laughing()
         {
-            if (Environment.TickCount > LastLaugh + 2500)
+            if (Environment.TickCount <= _lastLaugh + 2500)
             {
-                Packet.C2S.Emote.Encoded(new Packet.C2S.Emote.Struct((byte)Packet.Emotes.Laugh)).Send();
-                LastLaugh = Environment.TickCount;
+                return;
             }
+
+            Packet.C2S.Emote.Encoded(new Packet.C2S.Emote.Struct((byte) Packet.Emotes.Laugh)).Send();
+            _lastLaugh = Environment.TickCount;
         }
 
         private static void BuyItems()
         {
-                if (Utility.InFountain() && player.Gold > 325 && !boughtItemOne)
-                {
-                    //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(1001)).Send();
-                    player.BuyItem(ItemId.Boots_of_Speed);
-                    boughtItemOne = true;
-                }
+            if (ObjectManager.Player.InFountain() && Player.Gold > 325 && !_boughtItemOne)
+            {
+                //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(1001)).Send();
+                Player.BuyItem(ItemId.Boots_of_Speed);
+                _boughtItemOne = true;
+            }
 
-                if (Utility.InShopRange() && player.Gold > 475 && boughtItemOne && !boughtItemTwo)
-                {
-                    //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3117)).Send();
-                    player.BuyItem(ItemId.Boots_of_Mobility);
-                    boughtItemTwo = true;
-                }
+            if (ObjectManager.Player.InShop() && Player.Gold > 475 && _boughtItemOne && !_boughtItemTwo)
+            {
+                //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3117)).Send();
+                Player.BuyItem(ItemId.Boots_of_Mobility);
+                _boughtItemTwo = true;
+            }
 
-                if (Utility.InShopRange() && player.Gold > 475 && boughtItemTwo && !boughtItemThree)
-                {
-                    //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3270)).Send();
-                    player.BuyItem(ItemId.Boots_of_Mobility_Enchantment_Homeguard);
-                    boughtItemThree = true;
-                }
+            if (ObjectManager.Player.InShop() && Player.Gold > 475 && _boughtItemTwo && !_boughtItemThree)
+            {
+                //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3270)).Send();
+                Player.BuyItem(ItemId.Boots_of_Mobility_Enchantment_Homeguard);
+                _boughtItemThree = true;
+            }
 
-                if (Utility.InShopRange() && player.Gold > 1100 && boughtItemThree)
-                {
-                    //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3086)).Send();
-                    player.BuyItem(ItemId.Zeal);
-                }
+            if (ObjectManager.Player.InShop() && Player.Gold > 1100 && _boughtItemThree)
+            {
+                //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3086)).Send();
+                Player.BuyItem(ItemId.Zeal);
+            }
         }
 
         private static void OnGameEnd(EventArgs args)
@@ -518,13 +469,13 @@ namespace BlackFeeder
             Game.Say("/all Good game guys, well played.");
         }
 
-        private static void createMenu()
+        private static void CreateMenu()
         {
-            menu = new Menu("BlackFeeder", "blackfeeder", true);
+            Menu = new Menu("BlackFeeder", "blackfeeder", true);
 
             // Feeding
-            Menu feeder = new Menu("BlackFeeder", "blackfeeder");
-            menu.AddSubMenu(feeder);
+            var feeder = new Menu("BlackFeeder", "blackfeeder");
+            Menu.AddSubMenu(feeder);
             feeder.AddItem(new MenuItem("feedingActive", "Feeding active!").SetValue(true));
             feeder.AddItem(new MenuItem("useSkillsActive", "Use Skills to feed!").SetValue(true));
             feeder.AddItem(new MenuItem("sayShitActive", "Say stuff while feeding!").SetValue(true));
@@ -532,7 +483,7 @@ namespace BlackFeeder
             feeder.AddItem(new MenuItem("buyItemsActive", "Buy Items!").SetValue(true));
 
             // Finalizing
-            menu.AddToMainMenu();
+            Menu.AddToMainMenu();
         }
     }
 }
