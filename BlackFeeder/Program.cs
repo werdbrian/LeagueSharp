@@ -10,7 +10,7 @@ namespace BlackFeeder
         // Generic
         private static readonly Obj_AI_Hero Player = ObjectManager.Player;
         // Shit
-        private static bool _boughtItemOne, _boughtItemTwo, _boughtItemThree;
+        private static bool[] _bought = {false, false, false, false};
         private static string[] _deaths;
         private static double _timeDead;
         private static int _deathCounter;
@@ -19,6 +19,13 @@ namespace BlackFeeder
         private static SpellSlot _ghostSlot, _reviveSlot;
         private static readonly Vector3 PurpleSpawn = new Vector3(14286f, 14382f, 172f);
         private static readonly Vector3 BlueSpawn = new Vector3(416f, 468f, 182f);
+        private enum _buyList : int
+        {
+            Boots_Speed = 0,
+            Boots_Mobility,
+            Boots_Homeguard,
+            Aether_Wisp
+        };
         // Menu
         public static Menu Menu;
 
@@ -59,6 +66,11 @@ namespace BlackFeeder
             {
                 Feederino();
             }
+        }
+
+        private static bool isBought(_buyList _enum)
+        {
+            return _bought[(int)_enum];
         }
 
         private static void Feederino()
@@ -436,31 +448,32 @@ namespace BlackFeeder
 
         private static void BuyItems()
         {
-            if (ObjectManager.Player.InFountain() && Player.Gold > 325 && !_boughtItemOne)
+            if (Player.InFountain() && Player.Gold > 325 && !isBought(_buyList.Boots_Speed))
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(1001)).Send();
                 Player.BuyItem(ItemId.Boots_of_Speed);
-                _boughtItemOne = true;
+                _bought[(int)_buyList.Boots_Speed] = true;
             }
 
-            if (ObjectManager.Player.InShop() && Player.Gold > 475 && _boughtItemOne && !_boughtItemTwo)
+            if (Player.InShop() && Player.Gold > 475 && isBought(_buyList.Boots_Speed) && !isBought(_buyList.Boots_Mobility))
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3117)).Send();
                 Player.BuyItem(ItemId.Boots_of_Mobility);
-                _boughtItemTwo = true;
+                _bought[(int)_buyList.Boots_Mobility] = true;
             }
 
-            if (ObjectManager.Player.InShop() && Player.Gold > 475 && _boughtItemTwo && !_boughtItemThree)
+            if (Player.InShop() && Player.Gold > 475 && isBought(_buyList.Boots_Mobility) && !isBought(_buyList.Boots_Homeguard))
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3270)).Send();
                 Player.BuyItem(ItemId.Boots_of_Mobility_Enchantment_Homeguard);
-                _boughtItemThree = true;
+                _bought[(int)_buyList.Boots_Homeguard] = true;
             }
 
-            if (ObjectManager.Player.InShop() && Player.Gold > 1100 && _boughtItemThree)
+            if (Player.InShop() && Player.Gold > 1100 && isBought(_buyList.Boots_Homeguard) && !isBought(_buyList.Aether_Wisp))
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3086)).Send();
-                Player.BuyItem(ItemId.Zeal);
+                Player.BuyItem(ItemId.Aether_Wisp);
+                _bought[(int)_buyList.Aether_Wisp] = true;
             }
         }
 
