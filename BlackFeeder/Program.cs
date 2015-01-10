@@ -10,7 +10,7 @@ namespace BlackFeeder
         // Generic
         private static readonly Obj_AI_Hero Player = ObjectManager.Player;
         // Shit
-        private static bool _boughtItemOne, _boughtItemTwo, _boughtItemThree;
+        private static bool[] _boughtItems = {false, false, false, false};
         private static string[] _deaths;
         private static double _timeDead;
         private static int _deathCounter;
@@ -436,30 +436,36 @@ namespace BlackFeeder
 
         private static void BuyItems()
         {
-            if (ObjectManager.Player.InFountain() && Player.Gold > 325 && !_boughtItemOne)
+            if (Player.InFountain() && Player.Gold > 325 && !_boughtItems[0])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(1001)).Send();
                 Player.BuyItem(ItemId.Boots_of_Speed);
-                _boughtItemOne = true;
+                _boughtItems[0] = true;
             }
 
-            if (ObjectManager.Player.InShop() && Player.Gold > 475 && _boughtItemOne && !_boughtItemTwo)
+            if (Player.InShop() && Player.Gold > 475 && _boughtItems[0] && !_boughtItems[1])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3117)).Send();
                 Player.BuyItem(ItemId.Boots_of_Mobility);
-                _boughtItemTwo = true;
+                _boughtItems[1] = true;
             }
 
-            if (ObjectManager.Player.InShop() && Player.Gold > 475 && _boughtItemTwo && !_boughtItemThree)
+            if (Player.InShop() && Player.Gold > 475 && _boughtItems[1] && !_boughtItems[2])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3270)).Send();
                 Player.BuyItem(ItemId.Boots_of_Mobility_Enchantment_Homeguard);
-                _boughtItemThree = true;
+                _boughtItems[2] = true;
             }
 
-            if (ObjectManager.Player.InShop() && Player.Gold > 1100 && _boughtItemThree)
+            if (Player.InShop() && Player.Gold > 950 && _boughtItems[2] && !_boughtItems[3])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3086)).Send();
+                Player.BuyItem(ItemId.Aether_Wisp);
+                _boughtItems[3] = true;
+            }
+
+            if (Player.InShop() && Player.Gold > 1100 && _boughtItems[3])
+            {
                 Player.BuyItem(ItemId.Zeal);
             }
         }
