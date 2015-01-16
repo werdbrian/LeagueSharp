@@ -10,7 +10,7 @@ namespace BlackFeeder
         // Generic
         private static readonly Obj_AI_Hero Player = ObjectManager.Player;
         // Shit
-        private static bool[] _boughtItems = {false, false, false, false};
+        private static readonly bool[] BoughtItems = { false, false, false, false };
         private static string[] _deaths;
         private static double _timeDead;
         private static int _deathCounter;
@@ -37,8 +37,7 @@ namespace BlackFeeder
             _deaths = new[]
             {
                 "XD", "kek", "sorry lag", "gg", "help pls", "nooob wtf", "team???", "gg my team sucks",
-                "matchmaking sucks",
-                "i can't carry dis", "wtf how?", "wow rito nerf pls", "report enemys for drophacks",
+                "matchmaking sucks", "i can't carry dis", "wtf how?", "wow rito nerf pls", "report enemys for drophacks",
                 "tilidin y u do dis", "kappa"
             };
             _ghostSlot = Player.GetSpellSlot("SummonerHaste");
@@ -430,41 +429,42 @@ namespace BlackFeeder
                 return;
             }
 
-            Packet.C2S.Emote.Encoded(new Packet.C2S.Emote.Struct((byte) Packet.Emotes.Laugh)).Send();
+            //Packet.C2S.Emote.Encoded(new Packet.C2S.Emote.Struct((byte) Packet.Emotes.Laugh)).Send();
+            Game.Say("/l");
             _lastLaugh = Environment.TickCount;
         }
 
         private static void BuyItems()
         {
-            if (Player.InFountain() && Player.Gold > 325 && !_boughtItems[0])
+            if (Player.InFountain() && Player.Gold > 325 && !BoughtItems[0])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(1001)).Send();
                 Player.BuyItem(ItemId.Boots_of_Speed);
-                _boughtItems[0] = true;
+                BoughtItems[0] = true;
             }
 
-            if (Player.InShop() && Player.Gold > 475 && _boughtItems[0] && !_boughtItems[1])
+            if (Player.InShop() && Player.Gold > 475 && BoughtItems[0] && !BoughtItems[1])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3117)).Send();
                 Player.BuyItem(ItemId.Boots_of_Mobility);
-                _boughtItems[1] = true;
+                BoughtItems[1] = true;
             }
 
-            if (Player.InShop() && Player.Gold > 475 && _boughtItems[1] && !_boughtItems[2])
+            if (Player.InShop() && Player.Gold > 475 && BoughtItems[1] && !BoughtItems[2])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3270)).Send();
                 Player.BuyItem(ItemId.Boots_of_Mobility_Enchantment_Homeguard);
-                _boughtItems[2] = true;
+                BoughtItems[2] = true;
             }
 
-            if (Player.InShop() && Player.Gold > 950 && _boughtItems[2] && !_boughtItems[3])
+            if (Player.InShop() && Player.Gold > 950 && BoughtItems[2] && !BoughtItems[3])
             {
                 //Packet.C2S.BuyItem.Encoded(new Packet.C2S.BuyItem.Struct(3086)).Send();
                 Player.BuyItem(ItemId.Aether_Wisp);
-                _boughtItems[3] = true;
+                BoughtItems[3] = true;
             }
 
-            if (Player.InShop() && Player.Gold > 1100 && _boughtItems[3])
+            if (Player.InShop() && Player.Gold > 1100 && BoughtItems[3])
             {
                 Player.BuyItem(ItemId.Zeal);
             }
