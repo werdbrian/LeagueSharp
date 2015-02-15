@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -15,7 +15,7 @@ namespace BlackKassadin
         // Spells
         private static readonly List<Spell> SpellList = new List<Spell>();
         private static Spell _q, _w, _e, _r;
-        private static SpellSlot _igniteSlot;
+        public static Spell _ignite;
         private static Items.Item _dfg;
         // Menu
         public static Menu Menu;
@@ -40,9 +40,14 @@ namespace BlackKassadin
             _w = new Spell(SpellSlot.W, 150);
             _e = new Spell(SpellSlot.E, 650);
             _r = new Spell(SpellSlot.R, 700);
-            SpellList.AddRange(new[] {_q, _w, _e, _r});
+            SpellList.AddRange(new[] { _q, _w, _e, _r });
 
-            _igniteSlot = Player.GetSpellSlot("SummonerDot");
+            SpellSlot igniteslot = ObjectManager.Player.Spellbook.GetSpell(ObjectManager.Player.GetSpellSlot("summonerdot")).Slot;
+
+            if (igniteslot != SpellSlot.Unknown)
+            {
+                _ignite = new Spell(igniteslot, 600);
+            }
 
             _dfg = Utility.Map.GetMap().Type == Utility.Map.MapType.TwistedTreeline ||
                    Utility.Map.GetMap().Type == Utility.Map.MapType.CrystalScar
@@ -93,7 +98,7 @@ namespace BlackKassadin
 
             // Harass
             if (Menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
-                (Player.Mana/Player.MaxMana*100) >
+                (Player.Mana / Player.MaxMana * 100) >
                 Menu.Item("harassMana").GetValue<Slider>().Value)
             {
                 OnHarass(target);
@@ -101,7 +106,7 @@ namespace BlackKassadin
 
             // WaveClear
             if (Menu.SubMenu("waveclear").Item("wcActive").GetValue<KeyBind>().Active &&
-                (Player.Mana/Player.MaxMana*100) >
+                (Player.Mana / Player.MaxMana * 100) >
                 Menu.Item("wcMana").GetValue<Slider>().Value)
             {
                 WaveClear();
@@ -124,48 +129,44 @@ namespace BlackKassadin
             var useW = comboMenu.Item("comboUseW").GetValue<bool>() && _w.IsReady();
             var useE = comboMenu.Item("comboUseE").GetValue<bool>() && _e.IsReady();
             var useR = comboMenu.Item("comboUseR").GetValue<bool>() && _r.IsReady();
-
-            var comboDamage = target != null ? GetComboDamage(target) : 0;
-
-            if (target != null && target.HasBuffOfType(BuffType.Invulnerability))
+            if (target != null)
             {
-                return;
-            }
+                var comboDamage = GetComboDamage(target);
 
-            if (target != null && comboDamage > target.Health && _dfg.IsReady())
-            {
-                _dfg.Cast(target);
-            }
+                if (target.HasBuffOfType(BuffType.Invulnerability))
+                {
+                    return;
+                }
 
-            if (target != null && (useR && Player.Distance(target.Position) < _r.Range))
-            {
-                _r.Cast(target, Packets());
-            }
+                if (comboDamage > target.Health && _dfg.IsReady())
+                {
+                    _dfg.Cast(target);
+                }
 
-            if (useW)
-            {
-                _w.Cast(Player, Packets());
-            }
+                if (useR && Player.Distance(target.Position) < _r.Range)
+                {
+                    _r.Cast(target, Packets());
+                }
 
-            if (target != null && (useQ && Player.Distance(target.Position) < _q.Range))
-            {
-                _q.Cast(target, Packets());
-            }
+                if (useW && Player.Distance(target.ServerPosition) <= _w.Range + 25)
+                {
+                    _w.Cast(Player, Packets());
+                }
 
-            if (target != null && (useE && Player.Distance(target.Position) < _e.Range))
-            {
-                _e.Cast(target, Packets());
-            }
+                if (useQ && Player.Distance(target.Position) < _q.Range)
+                {
+                    _q.Cast(target, Packets());
+                }
 
-            if (target == null || !Menu.Item("miscIgnite").GetValue<bool>() || _igniteSlot == SpellSlot.Unknown ||
-                Player.Spellbook.CanUseSpell(_igniteSlot) != SpellState.Ready)
-            {
-                return;
-            }
+                if (useE && Player.Distance(target.Position) < _e.Range)
+                {
+                    _e.Cast(target, Packets());
+                }
 
-            if (GetComboDamage(target) > target.Health)
-            {
-                Player.Spellbook.CastSpell(_igniteSlot, target);
+                if (Menu.Item("miscIgnite").GetValue<bool>() && _ignite.IsReady() && GetIgniteDmg(target) >= target.Health)
+                {
+                    _ignite.Cast(target);
+                }
             }
         }
 
@@ -242,7 +243,7 @@ namespace BlackKassadin
                 foreach (var minion in allMinionsQ.Where(minion => minion.IsValidTarget() &&
                                                                    HealthPrediction.GetHealthPrediction(minion,
                                                                        (int)
-                                                                           (Player.Distance(minion.Position)*1000/1400)) <
+                                                                           (Player.Distance(minion.Position) * 1000 / 1400)) <
                                                                    Player.GetSpellDamage(minion, SpellSlot.Q)))
                 {
                     _q.CastOnUnit(minion, Packets());
@@ -255,7 +256,7 @@ namespace BlackKassadin
                 var farm = _e.GetLineFarmLocation(allMinionsE, _e.Width);
                 if (allMinionsE.Any(minion => minion.IsValidTarget() &&
                                               HealthPrediction.GetHealthPrediction(minion,
-                                                  (int) (Player.Distance(minion.Position)*1000/1400)) <
+                                                  (int)(Player.Distance(minion.Position) * 1000 / 1400)) <
                                               Player.GetSpellDamage(minion, SpellSlot.E)))
                 {
                     _e.Cast(farm.Position, Packets());
@@ -316,11 +317,6 @@ namespace BlackKassadin
                 damage += Player.GetSpellDamage(enemy, SpellSlot.R);
             }
 
-            if (_dfg.IsReady())
-            {
-                damage += Player.GetItemDamage(enemy, Damage.DamageItems.Dfg)/1.2;
-            }
-
             if (_w.IsReady())
             {
                 damage += Player.GetSpellDamage(enemy, SpellSlot.W);
@@ -336,12 +332,22 @@ namespace BlackKassadin
                 damage += Player.GetSpellDamage(enemy, SpellSlot.E);
             }
 
-            if (_igniteSlot != SpellSlot.Unknown && Player.Spellbook.CanUseSpell(_igniteSlot) == SpellState.Ready)
+            if (_ignite.Slot != SpellSlot.Unknown && _ignite.IsReady())
             {
                 damage += Player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
             }
 
-            return (float) damage*(_dfg.IsReady() ? 1.2f : 1);
+            return (float) damage;
+        }
+
+        private static float GetIgniteDmg(Obj_AI_Hero target)
+        {
+            if (_ignite.Slot != SpellSlot.Unknown && _ignite.IsReady())
+            {
+                var damage = Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
+                return (float) damage;
+            }
+            return 0;
         }
 
         private static bool Packets()
