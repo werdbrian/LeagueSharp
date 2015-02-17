@@ -15,8 +15,7 @@ namespace BlackKassadin
         // Spells
         private static readonly List<Spell> SpellList = new List<Spell>();
         private static Spell _q, _w, _e, _r;
-        public static Spell _ignite;
-        private static Items.Item _dfg;
+        public static Spell Ignite;
         // Menu
         public static Menu Menu;
         private static Orbwalking.Orbwalker _ow;
@@ -46,13 +45,8 @@ namespace BlackKassadin
 
             if (igniteslot != SpellSlot.Unknown)
             {
-                _ignite = new Spell(igniteslot, 600);
+                Ignite = new Spell(igniteslot, 600);
             }
-
-            _dfg = Utility.Map.GetMap().Type == Utility.Map.MapType.TwistedTreeline ||
-                   Utility.Map.GetMap().Type == Utility.Map.MapType.CrystalScar
-                ? new Items.Item(3188, 750)
-                : new Items.Item(3128, 750);
 
             // Finetune spells
             _q.SetTargetted(0.5f, 1400f);
@@ -81,7 +75,7 @@ namespace BlackKassadin
                 var circleEntry = Menu.Item("drawRange" + spell.Slot).GetValue<Circle>();
                 if (circleEntry.Active)
                 {
-                    Utility.DrawCircle(Player.Position, spell.Range, circleEntry.Color);
+                    Render.Circle.DrawCircle(Player.Position, spell.Range, circleEntry.Color);
                 }
             }
         }
@@ -131,16 +125,9 @@ namespace BlackKassadin
             var useR = comboMenu.Item("comboUseR").GetValue<bool>() && _r.IsReady();
             if (target != null)
             {
-                var comboDamage = GetComboDamage(target);
-
                 if (target.HasBuffOfType(BuffType.Invulnerability))
                 {
                     return;
-                }
-
-                if (comboDamage > target.Health && _dfg.IsReady())
-                {
-                    _dfg.Cast(target);
                 }
 
                 if (useR && Player.Distance(target.Position) < _r.Range)
@@ -162,11 +149,11 @@ namespace BlackKassadin
                 {
                     _e.Cast(target, Packets());
                 }
-
-                if (Menu.Item("miscIgnite").GetValue<bool>() && _ignite.IsReady() && GetIgniteDmg(target) >= target.Health)
+                /*
+                if (Menu.Item("miscIgnite").GetValue<bool>() && Ignite.IsReady() && GetIgniteDmg(target) >= target.Health)
                 {
-                    _ignite.Cast(target);
-                }
+                    Ignite.Cast(target);
+                } */
             }
         }
 
@@ -308,7 +295,7 @@ namespace BlackKassadin
 
             return buff != null ? buff.Count : 0;
         }
-
+        /*
         private static float GetComboDamage(Obj_AI_Base enemy)
         {
             var damage = 0d;
@@ -332,23 +319,23 @@ namespace BlackKassadin
                 damage += Player.GetSpellDamage(enemy, SpellSlot.E);
             }
 
-            if (_ignite.Slot != SpellSlot.Unknown && _ignite.IsReady())
+            if (Ignite.Slot != SpellSlot.Unknown && Ignite.IsReady())
             {
                 damage += Player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
             }
 
             return (float) damage;
         }
-
+       
         private static float GetIgniteDmg(Obj_AI_Hero target)
         {
-            if (_ignite.Slot != SpellSlot.Unknown && _ignite.IsReady())
+            if (Ignite.Slot != SpellSlot.Unknown && Ignite.IsReady())
             {
                 var damage = Player.GetSummonerSpellDamage(target, Damage.SummonerSpell.Ignite);
                 return (float) damage;
             }
             return 0;
-        }
+        } */
 
         private static bool Packets()
         {
@@ -411,7 +398,7 @@ namespace BlackKassadin
             misc.AddItem(new MenuItem("miscUseR", "Use R in Ult to mouse").SetValue(true));
             misc.AddItem(new MenuItem("miscUltStacks", "Limit to X Stacks")).SetValue(new Slider(3, 1, 4));
 
-
+            /*
             //Damage after combo:
             var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
             Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
@@ -420,8 +407,8 @@ namespace BlackKassadin
                 delegate(object sender, OnValueChangeEventArgs eventArgs)
                 {
                     Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
-                };
-
+                };*/
+            
             // Drawings
             var drawings = new Menu("Drawings", "drawings");
             Menu.AddSubMenu(drawings);
@@ -429,7 +416,7 @@ namespace BlackKassadin
             drawings.AddItem(new MenuItem("drawRangeW", "W range").SetValue(new Circle(false, Color.Aquamarine)));
             drawings.AddItem(new MenuItem("drawRangeE", "E / R range").SetValue(new Circle(false, Color.Aquamarine)));
             //drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
-            drawings.AddItem(dmgAfterComboItem);
+            //drawings.AddItem(dmgAfterComboItem);
 
             // Finalizing
             Menu.AddToMainMenu();
