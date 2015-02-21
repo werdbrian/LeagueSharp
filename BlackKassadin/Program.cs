@@ -175,7 +175,7 @@ namespace BlackKassadin
             }
 
             var pred = _forcePulse.GetPrediction(target);
-            if (_menu.Item("useForcePulseHarass").GetValue<bool>() && _forcePulse.IsReady() &&
+            if (_menu.Item("useJavelinHarass").GetValue<bool>() && _forcePulse.IsReady() &&
                 target.IsValidTarget(_forcePulse.Range) && _player.Distance(target.Position) <= _forcePulse.Range &&
                 pred.Hitchance >= CustomHitChance)
             {
@@ -183,7 +183,7 @@ namespace BlackKassadin
             }
 
             if (_menu.Item("useNullSphereHarass").GetValue<bool>() && _nullSphere.IsReady() &&
-                target.IsValidTarget(_nullSphere.Range) && _player.Distance(target.Position) <= _nullSphere.Range)
+                _player.Distance(target.Position) <= _nullSphere.Range)
             {
                 _nullSphere.Cast(target);
             }

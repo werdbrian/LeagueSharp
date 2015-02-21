@@ -68,12 +68,12 @@ namespace BlackKassadin
 
         public bool CanHarass()
         {
-            return !(_player.Mana / _player.MaxMana * 100 <= _menu.Item("minHarassMana").GetValue<Slider>().Value);
+            return !(_player.ManaPercentage() <= _menu.Item("minHarassMana").GetValue<Slider>().Value);
         }
 
         public bool CanLaneclear()
         {
-            return !(_player.Mana / _player.MaxMana * 100 <= _menu.Item("minLaneclearMana").GetValue<Slider>().Value);
+            return !(_player.ManaPercentage() <= _menu.Item("minLaneclearMana").GetValue<Slider>().Value);
         }
     }
 }
