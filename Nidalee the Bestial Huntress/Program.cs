@@ -99,7 +99,7 @@ namespace NidaleeTheBestialHuntress
                 OnCombo(target);
             }
 
-            if (_menu.Item("useHarass").GetValue<KeyBind>().Active)
+            if (_menu.Item("useHarass").GetValue<KeyBind>().Active) 
             {
                 OnHarass(target);
             }
