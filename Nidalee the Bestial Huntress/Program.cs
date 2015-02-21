@@ -773,7 +773,7 @@ namespace NidaleeTheBestialHuntress
             float pounceDistance = target.IsHunted() ? 750 : 400;
 
             if (_player.IsCougar() && _player.Distance(target.Position) > pounceDistance &&
-                _player.Distance(target.Position) < _javelinToss.Range && (GetComboDamage(target) > target.Health))
+                _player.Distance(target.Position) < _javelinToss.Range && (GetActualSpearDamage(target) > target.Health))
                 // TODO add a hardcoded getDamage when in cougar form.
             {
                 if (_aspectOfTheCougar.IsReady())
@@ -781,10 +781,7 @@ namespace NidaleeTheBestialHuntress
                     _aspectOfTheCougar.Cast();
                 }
                 if (_javelinToss.GetPrediction(target).Hitchance >= HitChance.Medium &&
-                    _javelinToss.GetPrediction(target).Hitchance != HitChance.Collision)
-                {
-                    ;
-                }
+                    _javelinToss.GetPrediction(target).Hitchance != HitChance.Collision) { } 
                 {
                     _javelinToss.Cast(target);
                 }
