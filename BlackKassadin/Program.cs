@@ -169,7 +169,7 @@ namespace BlackKassadin
 
         private static void OnHarass(Obj_AI_Hero target)
         {
-            if (!target.IsValidTarget(_nullSphere.Range) || !target.IsValidTarget(_forcePulse.Range) || !_manaManager.CanHarass())
+            if (!target.IsValidTarget(_nullSphere.Range) || !_manaManager.CanHarass())
             {
                 return;
             }
