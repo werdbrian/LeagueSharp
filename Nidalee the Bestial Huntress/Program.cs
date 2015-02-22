@@ -144,7 +144,10 @@ namespace NidaleeTheBestialHuntress
                 if (_pounce.IsReady() && _menu.Item("usePounce").GetValue<bool>())
                 {
                     if (_menu.Item("turretSafety").GetValue<bool>() && IsUnderEnemyTurret(target))
+                    {
+                        ShowNotification("Target is under turret, won't pounce.", Color.Red, 3100);
                         return;
+                    }
 
                     if (target.IsHunted() && _player.Distance(target.Position) <= 740)
                     {
