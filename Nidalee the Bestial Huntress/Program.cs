@@ -161,7 +161,7 @@ namespace NidaleeTheBestialHuntress
                 }
 
                 if (_menu.Item("useSwipe").GetValue<bool>() && _swipe.IsReady() &&
-                    _player.Distance(target) <= _swipe.RangeSqr)
+                    _player.Distance(target.Position) <= _swipe.RangeSqr)
                 {
                     if (!_pounce.IsReady())
                     {
@@ -171,7 +171,7 @@ namespace NidaleeTheBestialHuntress
 
                 if (_menu.Item("useHuman").GetValue<bool>())
                 {
-                    if (!_pounce.IsReady() && _player.Distance(target) > pounceDistance &&
+                    if (!_pounce.IsReady() && _player.Distance(target.Position) > pounceDistance &&
                         _cooldownTracker.CheckSpell(CooldownTracker.CooldownSpell.Javelin) &&
                         _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)
                     {
@@ -196,7 +196,7 @@ namespace NidaleeTheBestialHuntress
                     _bushwhack.CastIfHitchanceEquals(target, CustomHitChance);
                 }
 
-                if (target.IsHunted() && !_javelinToss.IsReady() && _player.Distance(target) < pounceDistance)
+                if (target.IsHunted() && !_javelinToss.IsReady() && _player.Distance(target.Position) < pounceDistance)
                 {
                     if (_aspectOfTheCougar.IsReady() && _menu.Item("useCougar").GetValue<bool>())
                     {
@@ -672,6 +672,7 @@ namespace NidaleeTheBestialHuntress
 
         #endregion
 
+        #region IsUnderEnemyTurret
         private static bool IsUnderEnemyTurret(Obj_AI_Base unit)
         {
             IEnumerable<Obj_AI_Turret> turrets;
@@ -695,6 +696,7 @@ namespace NidaleeTheBestialHuntress
             }
             return (turrets.Any());
         }
+        #endregion
 
         #region OnGameLoad
 
