@@ -32,6 +32,7 @@ namespace NidaleeTheBestialHuntress
         private static Orbwalking.Orbwalker _orbwalker;
         private static HealManager _healManager;
         private static ManaManager _manaManager;
+        private static CooldownTracker _cooldownTracker;
         private static Obj_AI_Hero _player;
         private static Spell _javelinToss, _takedown, _bushwhack, _pounce, _primalSurge, _swipe, _aspectOfTheCougar;
         private static Vector3? _fleeTargetPosition;
@@ -171,6 +172,7 @@ namespace NidaleeTheBestialHuntress
                 if (_menu.Item("useHuman").GetValue<bool>())
                 {
                     if (!_pounce.IsReady() && _player.Distance(target) > pounceDistance &&
+                        _cooldownTracker.CheckSpell(CooldownTracker.CooldownSpell.Javelin) &&
                         _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)
                     {
                         if (_aspectOfTheCougar.IsReady())
@@ -732,6 +734,7 @@ namespace NidaleeTheBestialHuntress
 
             _healManager = new HealManager();
             _manaManager = new ManaManager();
+            _cooldownTracker = new CooldownTracker();
 
             CreateMenu();
 
