@@ -70,6 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CooldownTracker.cs" />
     <Compile Include="DamageIndicator.cs" />
     <Compile Include="HealManager.cs" />
     <Compile Include="ManaManager.cs" />
