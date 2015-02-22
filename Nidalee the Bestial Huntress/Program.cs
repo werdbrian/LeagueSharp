@@ -99,7 +99,7 @@ namespace NidaleeTheBestialHuntress
                 OnCombo(target);
             }
 
-            if (_menu.Item("useHarass").GetValue<KeyBind>().Active) 
+            if (_menu.Item("useHarass").GetValue<KeyBind>().Active)
             {
                 OnHarass(target);
             }
@@ -126,6 +126,7 @@ namespace NidaleeTheBestialHuntress
 
         private static void OnCombo(Obj_AI_Hero target)
         {
+            float pounceDistance = target.IsHunted() ? 740 : _pounce.Range;
             if (_player.IsCougar())
             {
                 if (_menu.Item("useTakedown").GetValue<bool>() && _takedown.IsReady() &&
@@ -159,6 +160,18 @@ namespace NidaleeTheBestialHuntress
                         }
                     }
                 }
+
+                if (_menu.Item("useHuman").GetValue<bool>())
+                {
+                    if (!_pounce.IsReady() && _player.Distance(target) > pounceDistance &&
+                        _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)
+                    {
+                        if (_aspectOfTheCougar.IsReady())
+                        {
+                            _aspectOfTheCougar.Cast();
+                        }
+                    }
+                }
             }
             else
             {
@@ -172,6 +185,14 @@ namespace NidaleeTheBestialHuntress
                     target.IsValidTarget(_bushwhack.Range) && _player.Distance(target.Position) <= _bushwhack.Range)
                 {
                     _bushwhack.CastIfHitchanceEquals(target, CustomHitChance);
+                }
+
+                if (target.IsHunted() && !_javelinToss.IsReady() && _player.Distance(target) < pounceDistance)
+                {
+                    if (_aspectOfTheCougar.IsReady() && _menu.Item("useCougar").GetValue<bool>())
+                    {
+                        _aspectOfTheCougar.Cast();
+                    }
                 }
             }
         }
@@ -452,14 +473,14 @@ namespace NidaleeTheBestialHuntress
                     from target in
                         ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(_javelinToss.Range))
                     let prediction = _javelinToss.GetPrediction(target)
-                    let javelinDamage = _player.GetSpellDamage(target, SpellSlot.Q)
+                    let javelinDamage = GetActualSpearDamage(target)
                     where target.Health <= javelinDamage && prediction.Hitchance >= CustomHitChance
                     select prediction)
                 {
                     _javelinToss.Cast(pred.CastPosition);
                 }
             }
-            AutoSwitchForms();
+            SwitchKillsteal();
         }
 
         #endregion
@@ -494,6 +515,7 @@ namespace NidaleeTheBestialHuntress
                 {
                     humanMenu.AddItem(new MenuItem("useJavelin", "Use Javelin (Q)").SetValue(true));
                     humanMenu.AddItem(new MenuItem("useBushwhack", "Use Bushwhack (W)").SetValue(false));
+                    humanMenu.AddItem(new MenuItem("useCougar", "Auto Transform to Cougar").SetValue(true));
                     combo.AddSubMenu(humanMenu);
                 }
                 var cougarMenu = new Menu("Cougar Spells", "cougar");
@@ -501,6 +523,7 @@ namespace NidaleeTheBestialHuntress
                     cougarMenu.AddItem(new MenuItem("useTakedown", "Use Takedown (Q)").SetValue(true));
                     cougarMenu.AddItem(new MenuItem("usePounce", "Use Pounce (W)").SetValue(true));
                     cougarMenu.AddItem(new MenuItem("useSwipe", "Use Swipe (E)").SetValue(true));
+                    cougarMenu.AddItem(new MenuItem("useHuman", "Auto Transform to Human").SetValue(true));
                     combo.AddSubMenu(cougarMenu);
                 }
                 _menu.AddSubMenu(combo);
@@ -761,7 +784,7 @@ namespace NidaleeTheBestialHuntress
         }
 
 
-        private static void AutoSwitchForms()
+        private static void SwitchKillsteal()
         {
             Obj_AI_Hero target = TargetSelector.GetTarget(_javelinToss.Range, TargetSelector.DamageType.Magical);
 
@@ -770,7 +793,7 @@ namespace NidaleeTheBestialHuntress
                 return;
             }
 
-            float pounceDistance = target.IsHunted() ? 750 : 400;
+            float pounceDistance = target.IsHunted() ? 740 : 400;
 
             if (_player.IsCougar() && _player.Distance(target.Position) > pounceDistance &&
                 _player.Distance(target.Position) < _javelinToss.Range && (GetActualSpearDamage(target) > target.Health))
@@ -781,7 +804,7 @@ namespace NidaleeTheBestialHuntress
                     _aspectOfTheCougar.Cast();
                 }
                 if (_javelinToss.GetPrediction(target).Hitchance >= HitChance.Medium &&
-                    _javelinToss.GetPrediction(target).Hitchance != HitChance.Collision) { } 
+                    _javelinToss.GetPrediction(target).Hitchance != HitChance.Collision) {}
                 {
                     _javelinToss.Cast(target);
                 }

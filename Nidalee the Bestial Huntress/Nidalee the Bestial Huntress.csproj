@@ -36,23 +36,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BehaviorSharp">
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\BehaviorSharp.dll</HintPath>
+    </Reference>
     <Reference Include="clipper_library">
-      <HintPath>D:\Wichtige Daten\Programme\LeagueSharp\\System\clipper_library.dll</HintPath>
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\clipper_library.dll</HintPath>
+    </Reference>
+    <Reference Include="dmgLib2">
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\dmgLib2.dll</HintPath>
     </Reference>
     <Reference Include="LeagueSharp">
-      <HintPath>D:\Wichtige Daten\Programme\LeagueSharp\\System\LeagueSharp.dll</HintPath>
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\LeagueSharp.dll</HintPath>
     </Reference>
     <Reference Include="LeagueSharp.Common">
-      <HintPath>D:\Wichtige Daten\Programme\LeagueSharp\\System\LeagueSharp.Common.dll</HintPath>
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\LeagueSharp.Common.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
-      <HintPath>D:\Wichtige Daten\Programme\LeagueSharp\\System\SharpDX.dll</HintPath>
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D9">
-      <HintPath>D:\Wichtige Daten\Programme\LeagueSharp\\System\SharpDX.Direct3D9.dll</HintPath>
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.XInput">
-      <HintPath>D:\Wichtige Daten\Programme\LeagueSharp\\System\SharpDX.XInput.dll</HintPath>
+      <HintPath>..\..\..\Desktop\LeagueSharp\System\SharpDX.XInput.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
