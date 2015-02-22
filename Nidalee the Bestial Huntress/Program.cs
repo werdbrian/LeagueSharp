@@ -143,6 +143,9 @@ namespace NidaleeTheBestialHuntress
 
                 if (_pounce.IsReady() && _menu.Item("usePounce").GetValue<bool>())
                 {
+                    if (_menu.Item("turretSafety").GetValue<bool>() && IsUnderEnemyTurret(target))
+                        return;
+
                     if (target.IsHunted() && _player.Distance(target.Position) <= 740)
                     {
                         _pounce.Cast(target.ServerPosition);
@@ -574,6 +577,7 @@ namespace NidaleeTheBestialHuntress
                 misc.AddItem(
                     new MenuItem("hitChanceSetting", "Hitchance").SetValue(
                         new StringList(new[] { "Low", "Medium", "High", "Very High" }, 3)));
+                misc.AddItem(new MenuItem("turretSafety", "Don't use pounce under turret").SetValue(true));
                 _menu.AddSubMenu(misc);
             }
 
@@ -662,6 +666,30 @@ namespace NidaleeTheBestialHuntress
         }
 
         #endregion
+
+        private static bool IsUnderEnemyTurret(Obj_AI_Base unit)
+        {
+            IEnumerable<Obj_AI_Turret> turrets;
+            if (unit.IsEnemy)
+            {
+                turrets =
+                    ObjectManager.Get<Obj_AI_Turret>()
+                        .Where(
+                            x =>
+                                x.IsAlly && x.IsValid && !x.IsDead &&
+                                unit.ServerPosition.Distance(x.ServerPosition) < x.AttackRange);
+            }
+            else
+            {
+                turrets =
+                    ObjectManager.Get<Obj_AI_Turret>()
+                        .Where(
+                            x =>
+                                x.IsEnemy && x.IsValid && !x.IsDead &&
+                                unit.ServerPosition.Distance(x.ServerPosition) < x.AttackRange);
+            }
+            return (turrets.Any());
+        }
 
         #region OnGameLoad
 
