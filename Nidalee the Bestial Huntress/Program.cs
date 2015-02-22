@@ -834,9 +834,14 @@ namespace NidaleeTheBestialHuntress
             float pounceDistance = target.IsHunted() ? 740 : 400;
 
             if (_player.IsCougar() && _player.Distance(target.Position) > pounceDistance &&
-                _player.Distance(target.Position) < _javelinToss.Range && (GetActualSpearDamage(target) > target.Health))
+                _player.Distance(target.Position) < _javelinToss.Range && (GetActualSpearDamage(target) > target.Health) &&
+                _cooldownTracker.CheckSpell(CooldownTracker.CooldownSpell.Javelin))
                 // TODO add a hardcoded getDamage when in cougar form.
             {
+                if (_pounce.IsReady())
+                {
+                    _pounce.Cast(Game.CursorPos);
+                }
                 if (_aspectOfTheCougar.IsReady())
                 {
                     _aspectOfTheCougar.Cast();
