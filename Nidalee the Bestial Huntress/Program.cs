@@ -126,6 +126,12 @@ namespace NidaleeTheBestialHuntress
 
         private static void OnCombo(Obj_AI_Hero target)
         {
+            if (_menu.Item("miscIgnite").GetValue<bool>() && Ignite.IsReady() &&
+                Ignite.GetDamage(target) > target.Health)
+            {
+                Ignite.Cast(target);
+            }
+
             float pounceDistance = target.IsHunted() ? 740 : _pounce.Range;
             if (_player.IsCougar())
             {
@@ -150,14 +156,9 @@ namespace NidaleeTheBestialHuntress
                 if (_menu.Item("useSwipe").GetValue<bool>() && _swipe.IsReady() &&
                     _player.Distance(target) <= _swipe.RangeSqr)
                 {
-                    if (_menu.Item("useSwipe").GetValue<bool>() && _swipe.IsReady() &&
-                        _player.Distance(target.Position) <= _swipe.RangeSqr)
-
+                    if (!_pounce.IsReady())
                     {
-                        if (!_pounce.IsReady())
-                        {
-                            _swipe.Cast(target);
-                        }
+                        _swipe.Cast(target);
                     }
                 }
 
@@ -568,7 +569,7 @@ namespace NidaleeTheBestialHuntress
 
             var misc = new Menu("Misc Options", "misc");
             {
-                //misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
+                misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
                 misc.AddItem(new MenuItem("miscImmobile", "Use Javelin / Bushwhack on immobile").SetValue(true));
                 misc.AddItem(
                     new MenuItem("hitChanceSetting", "Hitchance").SetValue(
@@ -612,23 +613,24 @@ namespace NidaleeTheBestialHuntress
             double baseDamage = new double[] { 50, 75, 100, 125, 150 }[_javelinToss.Level - 1] +
                                 0.4 * _player.FlatMagicDamageMod;
 
-            float increasedDamageFactor = 0;
-
             float distance = _player.Distance(target.Position);
 
-            if (distance > 525)
+            if ((distance < 525))
             {
-                if (distance > 1300)
-                {
-                    distance = 1300;
-                }
-
-                float delta = distance - 525;
-
-                increasedDamageFactor = delta / 7.75f * 0.02f;
+                return (float) _player.GetSpellDamage(target, SpellSlot.Q);
             }
 
-            return (float) (increasedDamageFactor * baseDamage);
+            if (distance > 1300)
+            {
+                distance = 1300;
+            }
+
+            const float units = 7.75f;
+            const float percentage = 0.02f;
+
+            var totalDamgeCalulated = (float) (distance - 525 / units * percentage * baseDamage);
+
+            return totalDamgeCalulated;
         }
 
         #endregion
@@ -749,6 +751,8 @@ namespace NidaleeTheBestialHuntress
         private static float GetComboDamage(Obj_AI_Hero target)
         {
             double damage = 0d;
+
+            //TODO ignite.
 
             if (_player.IsCougar())
             {
