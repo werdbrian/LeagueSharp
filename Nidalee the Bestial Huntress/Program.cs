@@ -621,25 +621,18 @@ namespace NidaleeTheBestialHuntress
         {
             double baseDamage = new double[] { 50, 75, 100, 125, 150 }[_javelinToss.Level - 1] +
                                 0.4 * _player.FlatMagicDamageMod;
-
-            float distance = _player.Distance(target.Position);
-
-            if ((distance < 525))
+            float increasedDamageFactor = 0;
+            float distance = _player.Distance(target);
+            if (distance > 525)
             {
-                return (float) _player.GetSpellDamage(target, SpellSlot.Q);
+                if (distance > 1300)
+                {
+                    distance = 1300;
+                }
+                float delta = distance - 525;
+                increasedDamageFactor = delta / 7.75f * 0.02f;
             }
-
-            if (distance > 1300)
-            {
-                distance = 1300;
-            }
-
-            const float units = 7.75f;
-            const float percentage = 0.02f;
-
-            var totalDamgeCalulated = (float) (distance - 525 / units * percentage * baseDamage);
-
-            return totalDamgeCalulated;
+            return (float) (increasedDamageFactor * baseDamage);
         }
 
         #endregion
@@ -673,6 +666,7 @@ namespace NidaleeTheBestialHuntress
         #endregion
 
         #region IsUnderEnemyTurret
+
         private static bool IsUnderEnemyTurret(Obj_AI_Base unit)
         {
             IEnumerable<Obj_AI_Turret> turrets;
@@ -696,6 +690,7 @@ namespace NidaleeTheBestialHuntress
             }
             return (turrets.Any());
         }
+
         #endregion
 
         #region OnGameLoad
