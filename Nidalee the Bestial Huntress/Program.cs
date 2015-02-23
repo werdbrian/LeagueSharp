@@ -489,7 +489,7 @@ namespace NidaleeTheBestialHuntress
                     _javelinToss.Cast(pred.CastPosition);
                 }
             }
-            SwitchKillsteal();
+            //TODO temp disabled SwitchKillsteal();
         }
 
         #endregion
