@@ -127,12 +127,6 @@ namespace NidaleeTheBestialHuntress
 
         private static void OnCombo(Obj_AI_Hero target)
         {
-            if (_menu.Item("miscIgnite").GetValue<bool>() && Ignite.IsReady() &&
-                Ignite.GetDamage(target) > target.Health)
-            {
-                Ignite.Cast(target);
-            }
-
             float pounceDistance = target.IsHunted() ? 740 : _pounce.Range;
             if (_player.IsCougar())
             {
