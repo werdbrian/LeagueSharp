@@ -626,7 +626,7 @@ namespace NidaleeTheBestialHuntress
                 float delta = distance - 525;
                 increasedDamageFactor = delta / 7.75f * 0.02f;
             }
-            return (float) (increasedDamageFactor * baseDamage);
+            return (float) (baseDamage * increasedDamageFactor);
         }
 
         #endregion
