@@ -32,7 +32,6 @@ namespace NidaleeTheBestialHuntress
         private static Orbwalking.Orbwalker _orbwalker;
         private static HealManager _healManager;
         private static ManaManager _manaManager;
-        private static CooldownTracker _cooldownTracker;
         private static Obj_AI_Hero _player;
         private static Spell _javelinToss, _takedown, _bushwhack, _pounce, _primalSurge, _swipe, _aspectOfTheCougar;
         private static Vector3? _fleeTargetPosition;
@@ -165,15 +164,7 @@ namespace NidaleeTheBestialHuntress
 
                 if (_menu.Item("useHuman").GetValue<bool>())
                 {
-                    if (!_pounce.IsReady() && _player.Distance(target.Position) > pounceDistance &&
-                        _cooldownTracker.CheckSpell(CooldownTracker.CooldownSpell.Javelin) &&
-                        _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)
-                    {
-                        if (_aspectOfTheCougar.IsReady())
-                        {
-                            _aspectOfTheCougar.Cast();
-                        }
-                    }
+                   //TODO...
                 }
             }
             else
@@ -192,10 +183,7 @@ namespace NidaleeTheBestialHuntress
 
                 if (target.IsHunted() && !_javelinToss.IsReady() && _player.Distance(target.Position) < pounceDistance)
                 {
-                    if (_aspectOfTheCougar.IsReady() && _menu.Item("useCougar").GetValue<bool>())
-                    {
-                        _aspectOfTheCougar.Cast();
-                    }
+                   //TODO
                 }
             }
         }
@@ -725,7 +713,6 @@ namespace NidaleeTheBestialHuntress
 
             _healManager = new HealManager();
             _manaManager = new ManaManager();
-            _cooldownTracker = new CooldownTracker();
 
             CreateMenu();
 
@@ -825,8 +812,7 @@ namespace NidaleeTheBestialHuntress
             float pounceDistance = target.IsHunted() ? 740 : 400;
 
             if (_player.IsCougar() && _player.Distance(target.Position) > pounceDistance &&
-                _player.Distance(target.Position) < _javelinToss.Range && (GetActualSpearDamage(target) > target.Health) &&
-                _cooldownTracker.CheckSpell(CooldownTracker.CooldownSpell.Javelin))
+                _player.Distance(target.Position) < _javelinToss.Range && (GetActualSpearDamage(target) > target.Health))
                 // TODO add a hardcoded getDamage when in cougar form.
             {
                 if (_pounce.IsReady())
