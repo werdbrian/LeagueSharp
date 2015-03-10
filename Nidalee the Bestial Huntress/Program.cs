@@ -603,7 +603,7 @@ namespace NidaleeTheBestialHuntress
         {
             double baseDamage = new double[] { 50, 75, 100, 125, 150 }[_javelinToss.Level - 1] +
                                 0.4 * _player.FlatMagicDamageMod;
-            float increasedDamageFactor = 0;
+            float increasedDamageFactor = 1f;
             float distance = _player.Distance(target);
             if (distance > 525)
             {
