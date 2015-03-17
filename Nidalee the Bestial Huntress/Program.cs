@@ -79,6 +79,16 @@ namespace NidaleeTheBestialHuntress
 
             Circle damageCircle = _menu.Item("drawDamage").GetValue<Circle>();
 
+            var pred = GetPosPrediction(
+                _pounce, TargetSelector.GetTarget(1000, TargetSelector.DamageType.Magical));
+
+            foreach (Vector2 point in GetPointsInACircle(_player.ServerPosition.To2D(), 36, _pounce.Range))
+            {
+                //Render.Circle.DrawCircle(point.To3D(), 25, Color.DarkOrange);
+            }
+
+            Render.Circle.DrawCircle(pred, 100, Color.Red);
+
             DamageIndicator.DrawingColor = damageCircle.Color;
             DamageIndicator.Enabled = damageCircle.Active;
         }
@@ -126,7 +136,7 @@ namespace NidaleeTheBestialHuntress
 
         private static void OnCombo(Obj_AI_Hero target)
         {
-            float pounceDistance = target.IsHunted() ? 740 : _pounce.Range;
+            var pounceDistance = target.IsHunted() ? 740 : _pounce.Range;
             if (_player.IsCougar())
             {
                 if (_menu.Item("useTakedown").GetValue<bool>() && _takedown.IsReady() &&
@@ -137,7 +147,7 @@ namespace NidaleeTheBestialHuntress
 
                 if (_pounce.IsReady() && _menu.Item("usePounce").GetValue<bool>())
                 {
-                    if (_menu.Item("turretSafety").GetValue<bool>() && IsUnderEnemyTurret(target))
+                    if (_menu.Item("turretSafety").GetValue<bool>() && target.UnderTurret(true))
                     {
                         ShowNotification("Target is under turret, won't pounce.", Color.Red, 3100);
                         return;
@@ -161,11 +171,6 @@ namespace NidaleeTheBestialHuntress
                         _swipe.Cast(target);
                     }
                 }
-
-                if (_menu.Item("useHuman").GetValue<bool>())
-                {
-                   //TODO...
-                }
             }
             else
             {
@@ -179,11 +184,6 @@ namespace NidaleeTheBestialHuntress
                     target.IsValidTarget(_bushwhack.Range) && _player.Distance(target.Position) <= _bushwhack.Range)
                 {
                     _bushwhack.CastIfHitchanceEquals(target, CustomHitChance);
-                }
-
-                if (target.IsHunted() && !_javelinToss.IsReady() && _player.Distance(target.Position) < pounceDistance)
-                {
-                   //TODO
                 }
             }
         }
@@ -214,6 +214,7 @@ namespace NidaleeTheBestialHuntress
 
         private static void WaveClear()
         {
+            //redo
             List<Obj_AI_Base> allMinionsQ = MinionManager.GetMinions(
                 _player.ServerPosition, _takedown.Range, MinionTypes.All, MinionTeam.NotAlly);
             List<Obj_AI_Base> allMinionsW = MinionManager.GetMinions(
@@ -411,7 +412,7 @@ namespace NidaleeTheBestialHuntress
                             if (firstWallPoint != null)
                             {
                                 Vector3 wallPositionOpposite = (Vector3) firstWallPoint;
-                                // Check if it's worth to jump considering the path length
+                                // Check if it'spell worth to jump considering the path length
                                 if (_player.GetPath(wallPositionOpposite).ToList().To2D().PathLength() -
                                     _player.Distance(wallPositionOpposite) > 200)
                                 {
@@ -577,6 +578,16 @@ namespace NidaleeTheBestialHuntress
                     new MenuItem("drawDamage", "Draw Spell Damage").SetValue(new Circle(false, Color.GreenYellow)));
                 _menu.AddSubMenu(drawings);
             }
+
+            var donationMenu = new Menu("Donating", "donations");
+            {
+                donationMenu.AddItem(new MenuItem("kindword", "If you feel like supporting my work"));
+                donationMenu.AddItem(new MenuItem("kindword2", "Feel free to send a donation to: "));
+                donationMenu.AddItem(new MenuItem("kindword3", "iJava.i@hotmail.com"));
+                _menu.AddSubMenu(donationMenu);
+                //https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=F9A3B9JPQYTDJ
+            }
+
             _menu.AddToMainMenu();
         }
 
@@ -603,8 +614,8 @@ namespace NidaleeTheBestialHuntress
         {
             double baseDamage = new double[] { 50, 75, 100, 125, 150 }[_javelinToss.Level - 1] +
                                 0.4 * _player.FlatMagicDamageMod;
-            float increasedDamageFactor = 1f;
-            float distance = _player.Distance(target);
+            var increasedDamageFactor = 1f;
+            var distance = _player.Distance(target);
             if (distance > 525)
             {
                 if (distance > 1300)
@@ -716,7 +727,7 @@ namespace NidaleeTheBestialHuntress
 
             CreateMenu();
 
-            Game.OnGameUpdate += Game_OnGameUpdate;
+            Game.OnUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             Orbwalking.AfterAttack += AfterAttack;
 
@@ -764,20 +775,13 @@ namespace NidaleeTheBestialHuntress
         {
             double damage = 0d;
 
-            //TODO ignite.
-
             if (_player.IsCougar())
             {
                 if (_takedown.IsReady())
                 {
-                    if (target.IsHunted())
-                    {
-                        damage += _player.GetSpellDamage(target, SpellSlot.Q) * 0.33f;
-                    }
-                    else
-                    {
-                        damage += _player.GetSpellDamage(target, SpellSlot.Q);
-                    }
+                    damage += target.IsHunted()
+                        ? _player.GetSpellDamage(target, SpellSlot.Q) * 0.33f
+                        : _player.GetSpellDamage(target, SpellSlot.Q);
                 }
                 if (_pounce.IsReady())
                 {
@@ -799,36 +803,73 @@ namespace NidaleeTheBestialHuntress
             return (float) damage;
         }
 
-
-        private static void SwitchKillsteal()
+        public static List<Vector2> GetPointsInACircle(Vector2 center, int points, double radius)
         {
-            Obj_AI_Hero target = TargetSelector.GetTarget(_javelinToss.Range, TargetSelector.DamageType.Magical);
-
-            if (target == null || !_menu.Item("killstealSwitchForm").GetValue<bool>())
+            var list = new List<Vector2>();
+            var slice = 2 * Math.PI / points;
+            for (var i = 0; i < points; i++)
             {
+                var angle = slice * i;
+                var newX = (int) (center.X + radius * Math.Cos(angle));
+                var newY = (int) (center.Y + radius * Math.Sin(angle));
+                list.Add(new Vector2(newX, newY));
+            }
+            return list;
+        }
+
+        private static Vector3 GetPosPrediction(Spell spell, Obj_AI_Hero target)
+        {
+            foreach (Vector2 position in GetPointsInACircle(_player.ServerPosition.To2D(), 36, spell.Range))
+            {
+                SetSpellPosition(spell, position.To3D());
+                if (spell.GetPrediction(target).Hitchance >= HitChance.High)
+                {
+                    return position.To3D();
+                }
+            }
+            SetSpellPosition(spell, new Vector3());
+            return new Vector3();
+        }
+
+        public static void ExecutePositionPred(Obj_AI_Hero target) //TODO fix / work
+        {
+            bool hasSwitched = false;
+            foreach (Vector2 point in GetPointsInACircle(_player.ServerPosition.To2D(), 36, _pounce.Range))
+            {
+                SetSpellPosition(_javelinToss, point.To3D());
+
+                if (target != null && target.IsValidTarget()) // TODO safety checks
+                {
+                    if (GetActualSpearDamage(target) > target.Health + 15)
+                    {
+                        if (_player.IsCougar() && _aspectOfTheCougar.IsReady() && _pounce.IsReady())
+                        {
+                            _pounce.Cast(point);
+                            if (_aspectOfTheCougar.Cast())
+                                hasSwitched = true;;
+                        }
+                        if (!_player.IsCougar() && hasSwitched && _javelinToss.IsReady() && _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)
+                        {
+                            Utility.DelayAction.Add(250, () => _javelinToss.Cast(target));
+                            hasSwitched = false;
+                        }
+                    }
+                }
+            }
+
+            SetSpellPosition(_pounce, new Vector3());
+        }
+
+        public static void SetSpellPosition(this Spell spell, Vector3 position)
+        {
+            if (position.IsValid())
+            {
+                spell.From = position;
+                spell.RangeCheckFrom = position;
                 return;
             }
-
-            float pounceDistance = target.IsHunted() ? 740 : 400;
-
-            if (_player.IsCougar() && _player.Distance(target.Position) > pounceDistance &&
-                _player.Distance(target.Position) < _javelinToss.Range && (GetActualSpearDamage(target) > target.Health))
-                // TODO add a hardcoded getDamage when in cougar form.
-            {
-                if (_pounce.IsReady())
-                {
-                    _pounce.Cast(Game.CursorPos);
-                }
-                if (_aspectOfTheCougar.IsReady())
-                {
-                    _aspectOfTheCougar.Cast();
-                }
-                if (_javelinToss.GetPrediction(target).Hitchance >= HitChance.Medium &&
-                    _javelinToss.GetPrediction(target).Hitchance != HitChance.Collision) {}
-                {
-                    _javelinToss.Cast(target);
-                }
-            }
+            spell.From = new Vector3();
+            spell.RangeCheckFrom = new Vector3();
         }
 
         #endregion
