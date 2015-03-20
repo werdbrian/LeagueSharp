@@ -91,9 +91,9 @@ namespace NidaleeTheBestialHuntress
         {
             var target = TargetSelector.GetTarget(_javelinToss.Range, TargetSelector.DamageType.Magical);
 
-            ProcessCooldowns();
             Killsteal();
             OnImmobile();
+            ProcessCooldowns();
 
             if (_menu.Item("useCombo").GetValue<KeyBind>().Active)
             {
@@ -475,7 +475,7 @@ namespace NidaleeTheBestialHuntress
                         ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(_javelinToss.Range))
                     let prediction = _javelinToss.GetPrediction(target)
                     let javelinDamage = GetActualSpearDamage(target)
-                    where target.Health <= javelinDamage && prediction.Hitchance >= CustomHitChance
+                    where target.Health <= javelinDamage && prediction.Hitchance >= HitChance.Medium
                     select prediction)
                 {
                     _javelinToss.Cast(pred.CastPosition);
