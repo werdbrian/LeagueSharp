@@ -79,16 +79,6 @@ namespace NidaleeTheBestialHuntress
 
             Circle damageCircle = _menu.Item("drawDamage").GetValue<Circle>();
 
-            var pred = GetPosPrediction(
-                _pounce, TargetSelector.GetTarget(1000, TargetSelector.DamageType.Magical));
-
-            foreach (Vector2 point in GetPointsInACircle(_player.ServerPosition.To2D(), 36, _pounce.Range))
-            {
-                //Render.Circle.DrawCircle(point.To3D(), 25, Color.DarkOrange);
-            }
-
-            Render.Circle.DrawCircle(pred, 100, Color.Red);
-
             DamageIndicator.DrawingColor = damageCircle.Color;
             DamageIndicator.Enabled = damageCircle.Active;
         }
@@ -101,6 +91,7 @@ namespace NidaleeTheBestialHuntress
         {
             var target = TargetSelector.GetTarget(_javelinToss.Range, TargetSelector.DamageType.Magical);
 
+            ProcessCooldowns();
             Killsteal();
             OnImmobile();
 
@@ -149,7 +140,6 @@ namespace NidaleeTheBestialHuntress
                 {
                     if (_menu.Item("turretSafety").GetValue<bool>() && target.UnderTurret(true))
                     {
-                        ShowNotification("Target is under turret, won't pounce.", Color.Red, 3100);
                         return;
                     }
 
@@ -171,6 +161,17 @@ namespace NidaleeTheBestialHuntress
                         _swipe.Cast(target);
                     }
                 }
+
+                if (_menu.Item("useHuman").GetValue<bool>())
+                {
+                    if (!_pounce.IsReady() && _player.Distance(target.ServerPosition) > pounceDistance && HQ < 1)
+                    {
+                        if (_aspectOfTheCougar.IsReady())
+                        {
+                            _aspectOfTheCougar.Cast();
+                        }
+                    }
+                }
             }
             else
             {
@@ -184,6 +185,14 @@ namespace NidaleeTheBestialHuntress
                     target.IsValidTarget(_bushwhack.Range) && _player.Distance(target.Position) <= _bushwhack.Range)
                 {
                     _bushwhack.CastIfHitchanceEquals(target, CustomHitChance);
+                }
+
+                if (_menu.Item("useCougar").GetValue<bool>() && (CW < 1) && !_javelinToss.IsReady() && _player.Distance(target) <= pounceDistance)
+                {
+                    if (_aspectOfTheCougar.IsReady())
+                    {
+                        _aspectOfTheCougar.Cast();
+                    }
                 }
             }
         }
@@ -729,15 +738,79 @@ namespace NidaleeTheBestialHuntress
 
             Game.OnUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
-            Orbwalking.AfterAttack += AfterAttack;
+            Obj_AI_Base.OnProcessSpellCast += OnSpellCast;
 
             ShowNotification("Nidalee by blacky & iJabba", Color.Crimson, 4000);
             ShowNotification("Heal & ManaManager by iJabba", Color.Crimson, 4000);
         }
 
-        private static void AfterAttack(AttackableUnit unit, AttackableUnit target)
+        private static void OnSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            //TODO
+            if (sender.IsMe)
+            {
+                GetCooldowns(args);
+            }
+        }
+
+        private static readonly float[] HumanQcd = { 6, 6, 6, 6, 6 };
+        private static readonly float[] HumanWcd = { 13, 12, 11, 10, 9 };
+        private static readonly float[] HumanEcd = { 12, 12, 12, 12, 12 };
+        private static float CQRem, CWRem, CERem;
+        private static float HQRem, HWRem, HERem;
+        private static float CQ, CW, CE;
+        private static float HQ, HW, HE;
+
+        private static void ProcessCooldowns()
+        {
+            if (_player.IsDead)
+            {
+                return;
+            }
+            CQ = ((CQRem - Game.Time) > 0) ? (CQRem - Game.Time) : 0;
+            CW = ((CWRem - Game.Time) > 0) ? (CWRem - Game.Time) : 0;
+            CE = ((CERem - Game.Time) > 0) ? (CERem - Game.Time) : 0;
+            HQ = ((HQRem - Game.Time) > 0) ? (HQRem - Game.Time) : 0;
+            HW = ((HWRem - Game.Time) > 0) ? (HWRem - Game.Time) : 0;
+            HE = ((HERem - Game.Time) > 0) ? (HERem - Game.Time) : 0;
+        }
+
+        private static float CalculateCd(float time)
+        {
+            return time + (time * _player.PercentCooldownMod);
+        }
+
+        private static void GetCooldowns(GameObjectProcessSpellCastEventArgs spell)
+        {
+            if (_player.IsCougar())
+            {
+                if (spell.SData.Name == "Takedown")
+                {
+                    CQRem = Game.Time + CalculateCd(5);
+                }
+                if (spell.SData.Name == "Pounce")
+                {
+                    CWRem = Game.Time + CalculateCd(5);
+                }
+                if (spell.SData.Name == "Swipe")
+                {
+                    CERem = Game.Time + CalculateCd(5);
+                }
+            }
+            else
+            {
+                if (spell.SData.Name == "JavelinToss")
+                {
+                    HQRem = Game.Time + CalculateCd(HumanQcd[_javelinToss.Level - 1]);
+                }
+                if (spell.SData.Name == "Bushwhack")
+                {
+                    HWRem = Game.Time + CalculateCd(HumanWcd[_bushwhack.Level - 1]);
+                }
+                if (spell.SData.Name == "PrimalSurge")
+                {
+                    HERem = Game.Time + CalculateCd(HumanEcd[_primalSurge.Level - 1]);
+                }
+            }
         }
 
         #endregion
@@ -846,9 +919,13 @@ namespace NidaleeTheBestialHuntress
                         {
                             _pounce.Cast(point);
                             if (_aspectOfTheCougar.Cast())
-                                hasSwitched = true;;
+                            {
+                                hasSwitched = true;
+                            }
+                            ;
                         }
-                        if (!_player.IsCougar() && hasSwitched && _javelinToss.IsReady() && _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)
+                        if (!_player.IsCougar() && hasSwitched && _javelinToss.IsReady() &&
+                            _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)
                         {
                             Utility.DelayAction.Add(250, () => _javelinToss.Cast(target));
                             hasSwitched = false;
