@@ -36,6 +36,12 @@ namespace NidaleeTheBestialHuntress
         private static Spell _javelinToss, _takedown, _bushwhack, _pounce, _primalSurge, _swipe, _aspectOfTheCougar;
         private static Vector3? _fleeTargetPosition;
 
+        private static readonly string[] JungleMinions =
+        {
+            "SRU_Razorbeak", "SRU_Krug", "Sru_Crab", "SRU_Baron",
+            "SRU_Dragon", "SRU_Blue", "SRU_Red", "SRU_Murkwolf", "SRU_Gromp"
+        };
+
         #region hitchance
 
         private static HitChance CustomHitChance
@@ -176,7 +182,7 @@ namespace NidaleeTheBestialHuntress
                 if (_menu.Item("useHuman").GetValue<bool>())
                 {
                     if (_player.Distance(target.ServerPosition) > pounceDistance && HQ < 1 &&
-                        _player.Distance(target.ServerPosition) < _javelinToss.Range)
+                        _player.Distance(target.ServerPosition) < _javelinToss.Range && CW < 1)
                     {
                         var prediction = _javelinToss.GetPrediction(target);
                         if (_aspectOfTheCougar.IsReady() && prediction.Hitchance >= HitChance.Medium)
@@ -276,10 +282,6 @@ namespace NidaleeTheBestialHuntress
                 {
                     _swipe.Cast(allMinionsE[0]);
                 }
-                if (_aspectOfTheCougar.IsReady())
-                {
-                    _aspectOfTheCougar.Cast();
-                }
             } // TODO remake ofc
             else
             {
@@ -294,22 +296,82 @@ namespace NidaleeTheBestialHuntress
                 {
                     _bushwhack.Cast(allMinionsW2[0]);
                 }
-
-                if (_aspectOfTheCougar.IsReady())
-                {
-                    _aspectOfTheCougar.Cast();
-                }
             }
         }
 
         #endregion
 
-        #region JungleClear
+        #region JungleClear credits to kurisu :S
 
         private static void JungleClear()
         {
-            //TODO super OP jungle clear :S
+            Obj_AI_Minion smallMobs =
+                ObjectManager.Get<Obj_AI_Minion>()
+                    .FirstOrDefault(
+                        x => x.Name.Contains("Mini") && !x.Name.StartsWith("Minion") && x.IsValidTarget(700));
 
+            Obj_AI_Minion bigMobs =
+                ObjectManager.Get<Obj_AI_Minion>()
+                    .FirstOrDefault(
+                        x =>
+                            !x.Name.Contains("Mini") && !x.Name.StartsWith("Minion") &&
+                            JungleMinions.Any(name => x.Name.StartsWith(name)) && x.IsValidTarget(900));
+
+            var selectedMinion = bigMobs ?? smallMobs;
+            var pounceDistance = selectedMinion.IsHunted() ? 730 : _pounce.Range;
+            if (selectedMinion != null)
+            {
+                if (_player.IsCougar())
+                {
+                    if (_player.Distance(selectedMinion.ServerPosition) <= _swipe.Range)
+                    {
+                        if (_menu.Item("jcUseCougarE").GetValue<bool>() && !_pounce.IsReady())
+                        {
+                            _swipe.Cast(selectedMinion.ServerPosition);
+                        }
+
+                        if (_player.Distance(selectedMinion.ServerPosition) <= pounceDistance &&
+                            (CW < 0 || _pounce.IsReady()))
+                        {
+                            if (_menu.Item("jcUseCougarW").GetValue<bool>())
+                            {
+                                _pounce.Cast(selectedMinion.ServerPosition);
+                            }
+                        }
+
+                        if (_player.Distance(selectedMinion.ServerPosition) <= _takedown.Range && CQ < 1)
+                        {
+                            if (_menu.Item("jcUseCougarQ").GetValue<bool>())
+                            {
+                                _takedown.Cast();
+                            }
+                        }
+
+                        if ((!_takedown.IsReady() || CQ > 1) && (!_pounce.IsReady() || CW > 1) &&
+                            (_swipe.IsReady() || CE > 1))
+                        {
+                            if (_aspectOfTheCougar.IsReady())
+                            {
+                                _aspectOfTheCougar.Cast();
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (_menu.Item("jcUseHumanQ").GetValue<bool>())
+                    {
+                        _javelinToss.Cast(selectedMinion.ServerPosition);
+                    }
+
+                    if (HQ > 1 || !_javelinToss.IsReady() && _aspectOfTheCougar.IsReady())
+                    {
+                        _aspectOfTheCougar.Cast();
+
+                        //Game.PrintChat("Cast Delay for Spear = "+castDelay);
+                    }
+                }
+            }
         }
 
         #endregion
@@ -793,7 +855,7 @@ namespace NidaleeTheBestialHuntress
             return player.Spellbook.GetSpell(SpellSlot.Q).Name == "Takedown";
         }
 
-        public static bool IsHunted(this Obj_AI_Hero target)
+        public static bool IsHunted(this Obj_AI_Base target)
         {
             return target.HasBuff("nidaleepassivehunted");
         }
