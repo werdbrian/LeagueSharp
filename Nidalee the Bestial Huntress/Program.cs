@@ -35,7 +35,6 @@ namespace NidaleeTheBestialHuntress
         private static Obj_AI_Hero _player;
         private static Spell _javelinToss, _takedown, _bushwhack, _pounce, _primalSurge, _swipe, _aspectOfTheCougar;
         private static Vector3? _fleeTargetPosition;
-        public static Spell Ignite { get; private set; }
 
         #region hitchance
 
@@ -127,7 +126,7 @@ namespace NidaleeTheBestialHuntress
 
         private static void OnCombo(Obj_AI_Hero target)
         {
-            var pounceDistance = target.IsHunted() ? 740 : _pounce.Range;
+            var pounceDistance = target.IsHunted() ? 730 : _pounce.Range;
             if (_player.IsCougar())
             {
                 if (_menu.Item("useTakedown").GetValue<bool>() && _takedown.IsReady() &&
@@ -136,20 +135,32 @@ namespace NidaleeTheBestialHuntress
                     _takedown.Cast(true);
                 }
 
-                if (_pounce.IsReady() && _menu.Item("usePounce").GetValue<bool>())
+                if (_pounce.IsReady() && _menu.Item("usePounce").GetValue<bool>() &&
+                    _player.Distance(target.ServerPosition) > _pounce.Range)
                 {
                     if (_menu.Item("turretSafety").GetValue<bool>() && target.UnderTurret(true))
                     {
                         return;
                     }
 
-                    if (target.IsHunted() && _player.Distance(target.Position) <= 740)
+                    if (_menu.Item("pounceHunted").GetValue<bool>())
                     {
-                        _pounce.Cast(target.ServerPosition);
+                        if (target.IsHunted() && _player.Distance(target.ServerPosition) <= pounceDistance)
+                        {
+                            _pounce.Cast(target.ServerPosition);
+                        }
+                        if (!target.IsHunted() && _player.GetSpellDamage(target, SpellSlot.W) > target.Health + 20 &&
+                            _player.Distance(target.ServerPosition) <= pounceDistance)
+                        {
+                            _pounce.Cast(target.ServerPosition);
+                        }
                     }
-                    else if (_player.Distance(target.Position) <= 400)
+                    else
                     {
-                        _pounce.Cast(target.Position);
+                        if (_player.Distance(target) <= pounceDistance)
+                        {
+                            _pounce.Cast(target.ServerPosition);
+                        }
                     }
                 }
 
@@ -164,11 +175,14 @@ namespace NidaleeTheBestialHuntress
 
                 if (_menu.Item("useHuman").GetValue<bool>())
                 {
-                    if (!_pounce.IsReady() && _player.Distance(target.ServerPosition) > pounceDistance && HQ < 1)
+                    if (_player.Distance(target.ServerPosition) > pounceDistance && HQ < 1 &&
+                        _player.Distance(target.ServerPosition) < _javelinToss.Range)
                     {
-                        if (_aspectOfTheCougar.IsReady())
+                        var prediction = _javelinToss.GetPrediction(target);
+                        if (_aspectOfTheCougar.IsReady() && prediction.Hitchance >= HitChance.Medium)
                         {
                             _aspectOfTheCougar.Cast();
+                            Utility.DelayAction.Add(200, () => _javelinToss.Cast(prediction.CastPosition));
                         }
                     }
                 }
@@ -187,7 +201,8 @@ namespace NidaleeTheBestialHuntress
                     _bushwhack.CastIfHitchanceEquals(target, CustomHitChance);
                 }
 
-                if (_menu.Item("useCougar").GetValue<bool>() && (CW < 1) && !_javelinToss.IsReady() && _player.Distance(target) <= pounceDistance)
+                if (_menu.Item("useCougar").GetValue<bool>() && (CW < 1) && !_javelinToss.IsReady() &&
+                    _player.Distance(target) <= pounceDistance)
                 {
                     if (_aspectOfTheCougar.IsReady())
                     {
@@ -253,7 +268,7 @@ namespace NidaleeTheBestialHuntress
                 if (_menu.Item("wcUseCougarW").GetValue<bool>() && allMinionsW.Count > 0 &&
                     allMinionsW[0].IsValidTarget(_pounce.Range) && _pounce.IsReady())
                 {
-                    _pounce.Cast(allMinionsW[0]);
+                    _pounce.Cast(allMinionsW[0].Position);
                 }
 
                 if (_menu.Item("wcUseCougarE").GetValue<bool>() && allMinionsE.Count > 0 &&
@@ -261,7 +276,11 @@ namespace NidaleeTheBestialHuntress
                 {
                     _swipe.Cast(allMinionsE[0]);
                 }
-            }
+                if (_aspectOfTheCougar.IsReady())
+                {
+                    _aspectOfTheCougar.Cast();
+                }
+            } // TODO remake ofc
             else
             {
                 if (_menu.Item("wcUseHumanQ").GetValue<bool>() && allMinionsQ2.Count > 0 &&
@@ -275,6 +294,11 @@ namespace NidaleeTheBestialHuntress
                 {
                     _bushwhack.Cast(allMinionsW2[0]);
                 }
+
+                if (_aspectOfTheCougar.IsReady())
+                {
+                    _aspectOfTheCougar.Cast();
+                }
             }
         }
 
@@ -284,58 +308,8 @@ namespace NidaleeTheBestialHuntress
 
         private static void JungleClear()
         {
-            List<Obj_AI_Base> allMinionsQ = MinionManager.GetMinions(
-                _player.ServerPosition, _takedown.Range, MinionTypes.All, MinionTeam.Neutral);
-            List<Obj_AI_Base> allMinionsW = MinionManager.GetMinions(
-                _player.ServerPosition, _pounce.Range, MinionTypes.All, MinionTeam.Neutral);
-            List<Obj_AI_Base> allMinionsE = MinionManager.GetMinions(
-                _player.ServerPosition, _swipe.Range, MinionTypes.All, MinionTeam.Neutral);
-            List<Obj_AI_Base> allMinionsQ2 = MinionManager.GetMinions(
-                _player.ServerPosition, _javelinToss.Range, MinionTypes.All, MinionTeam.Neutral);
-            List<Obj_AI_Base> allMinionsW2 = MinionManager.GetMinions(
-                _player.ServerPosition, _bushwhack.Range, MinionTypes.All, MinionTeam.Neutral);
+            //TODO super OP jungle clear :S
 
-            if (!allMinionsQ[0].IsValidTarget(_takedown.Range) || !allMinionsW[0].IsValidTarget(_pounce.Range) ||
-                !allMinionsE[0].IsValidTarget(_swipe.Range) || !allMinionsQ2[0].IsValidTarget(_javelinToss.Range) ||
-                !allMinionsW2[0].IsValidTarget(_bushwhack.Range) || !_manaManager.CanLaneclear() && !_player.IsCougar())
-            {
-                return;
-            }
-
-            if (_player.IsCougar())
-            {
-                if (_menu.Item("jcUseCougarQ").GetValue<bool>() && allMinionsQ.Count > 0 &&
-                    allMinionsQ[0].IsValidTarget(_takedown.Range) && _takedown.IsReady())
-                {
-                    _takedown.Cast();
-                }
-
-                if (_menu.Item("jcUseCougarW").GetValue<bool>() && allMinionsW.Count > 0 &&
-                    allMinionsW[0].IsValidTarget(_pounce.Range) && _pounce.IsReady())
-                {
-                    _pounce.Cast(allMinionsW[0]);
-                }
-
-                if (_menu.Item("jcUseCougarE").GetValue<bool>() && allMinionsE.Count > 0 &&
-                    allMinionsE[0].IsValidTarget(_swipe.Range) && _swipe.IsReady())
-                {
-                    _swipe.Cast(allMinionsE[0]);
-                }
-            }
-            else
-            {
-                if (_menu.Item("jcUseHumanQ").GetValue<bool>() && allMinionsQ2.Count > 0 &&
-                    allMinionsQ2[0].IsValidTarget(_javelinToss.Range) && _javelinToss.IsReady())
-                {
-                    _javelinToss.Cast(allMinionsQ2[0]);
-                }
-
-                if (_menu.Item("jcUseHumanW").GetValue<bool>() && allMinionsW2.Count > 0 &&
-                    allMinionsW2[0].IsValidTarget(_bushwhack.Range) && _bushwhack.IsReady())
-                {
-                    _bushwhack.Cast(allMinionsW2[0]);
-                }
-            }
         }
 
         #endregion
@@ -364,9 +338,7 @@ namespace NidaleeTheBestialHuntress
             var tempGrid = NavMesh.WorldToGrid(movePosition.X, movePosition.Y);
             _fleeTargetPosition = NavMesh.GridToWorld((short) tempGrid.X, (short) tempGrid.Y);
             // Also check if we want to AA aswell
-            Obj_AI_Base target = null;
             // Reset walljump indicators
-            var wallJumpPossible = false;
             // Only calculate stuff when our Q is up and there is a wall inbetween
             if (_player.IsCougar() && _pounce.IsReady() && wallCheck != null)
             {
@@ -432,10 +404,6 @@ namespace NidaleeTheBestialHuntress
                                         _pounce.Cast(wallPositionOpposite);
                                         jumpTriggered = true;
                                     }
-                                    else
-                                    {
-                                        wallJumpPossible = true;
-                                    }
                                 }
                                 else
                                 {
@@ -470,9 +438,8 @@ namespace NidaleeTheBestialHuntress
         {
             if (_menu.Item("killstealUseQ").GetValue<bool>())
             {
-                foreach (var pred in
-                    from target in
-                        ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsValidTarget(_javelinToss.Range))
+                foreach (PredictionOutput pred in
+                    from target in HeroManager.Enemies.Where(hero => hero.IsValidTarget(_javelinToss.Range))
                     let prediction = _javelinToss.GetPrediction(target)
                     let javelinDamage = GetActualSpearDamage(target)
                     where target.Health <= javelinDamage && prediction.Hitchance >= HitChance.Medium
@@ -481,7 +448,16 @@ namespace NidaleeTheBestialHuntress
                     _javelinToss.Cast(pred.CastPosition);
                 }
             }
-            //TODO temp disabled SwitchKillsteal();
+
+            if (_menu.Item("killstealDashing").GetValue<bool>())
+            {
+                foreach (Obj_AI_Hero target in
+                    HeroManager.Enemies.Where(hero => hero.IsValidTarget(_javelinToss.Range))
+                        .Where(target => GetActualSpearDamage(target) > target.Health + 20 && _javelinToss.IsReady()))
+                {
+                    _javelinToss.CastIfHitchanceEquals(target, HitChance.Dashing);
+                }
+            }
         }
 
         #endregion
@@ -504,9 +480,9 @@ namespace NidaleeTheBestialHuntress
             {
                 keybindings.AddItem(new MenuItem("useCombo", "Combo").SetValue(new KeyBind(32, KeyBindType.Press)));
                 keybindings.AddItem(new MenuItem("useHarass", "Harass").SetValue(new KeyBind('C', KeyBindType.Press)));
-                keybindings.AddItem(new MenuItem("useWC", "Waveclear").SetValue(new KeyBind('V', KeyBindType.Press)));
-                keybindings.AddItem(new MenuItem("useJC", "Jungleclear").SetValue(new KeyBind('V', KeyBindType.Press)));
-                keybindings.AddItem(new MenuItem("useFlee", "Flee").SetValue(new KeyBind('G', KeyBindType.Press)));
+                keybindings.AddItem(new MenuItem("useWC", "Waveclear").SetValue(new KeyBind('X', KeyBindType.Press)));
+                keybindings.AddItem(new MenuItem("useJC", "Jungleclear").SetValue(new KeyBind('X', KeyBindType.Press)));
+                keybindings.AddItem(new MenuItem("useFlee", "Flee").SetValue(new KeyBind('V', KeyBindType.Press)));
                 _menu.AddSubMenu(keybindings);
             }
 
@@ -523,6 +499,7 @@ namespace NidaleeTheBestialHuntress
                 {
                     cougarMenu.AddItem(new MenuItem("useTakedown", "Use Takedown (Q)").SetValue(true));
                     cougarMenu.AddItem(new MenuItem("usePounce", "Use Pounce (W)").SetValue(true));
+                    cougarMenu.AddItem(new MenuItem("pounceHunted", " --> Only pounce hunted targets").SetValue(true));
                     cougarMenu.AddItem(new MenuItem("useSwipe", "Use Swipe (E)").SetValue(true));
                     cougarMenu.AddItem(new MenuItem("useHuman", "Auto Transform to Human").SetValue(true));
                     combo.AddSubMenu(cougarMenu);
@@ -560,7 +537,8 @@ namespace NidaleeTheBestialHuntress
             var killsteal = new Menu("Killsteal Options", "killsteal");
             {
                 killsteal.AddItem(new MenuItem("killstealUseQ", "Use Javelin (Q)").SetValue(true));
-                killsteal.AddItem(new MenuItem("killstealSwitchForm", "Switch form").SetValue(true));
+                killsteal.AddItem(new MenuItem("killstealDashing", "Use Javelin on dashing").SetValue(true));
+                //   killsteal.AddItem(new MenuItem("killstealSwitchForm", "Switch form").SetValue(true));
                 _menu.AddSubMenu(killsteal);
             }
 
@@ -604,7 +582,7 @@ namespace NidaleeTheBestialHuntress
 
         #region Notifications Credits to Beaving.
 
-        public static Notification ShowNotification(string message, Color color, int duration = -1, bool dispose = true)
+        public static void ShowNotification(string message, Color color, int duration = -1, bool dispose = true)
         {
             var notify = new Notification(message).SetTextColor(color);
             Notifications.AddNotification(notify);
@@ -612,7 +590,6 @@ namespace NidaleeTheBestialHuntress
             {
                 Utility.DelayAction.Add(duration, () => notify.Dispose());
             }
-            return notify;
         }
 
         #endregion
@@ -646,8 +623,8 @@ namespace NidaleeTheBestialHuntress
             if (_menu.Item("miscImmobile").GetValue<bool>() && !_player.IsCougar())
             {
                 foreach (var pred in
-                    ObjectManager.Get<Obj_AI_Hero>()
-                        .Where(hero => hero.IsValidTarget() && hero.Distance(_player.Position) <= _javelinToss.Range)
+                    HeroManager.Enemies.Where(
+                        hero => hero.IsValidTarget() && hero.Distance(_player.Position) <= _javelinToss.Range)
                         .Select(target => _javelinToss.GetPrediction(target))
                         .Where(pred => pred.Hitchance == HitChance.Immobile))
                 {
@@ -655,8 +632,8 @@ namespace NidaleeTheBestialHuntress
                 }
 
                 foreach (var pred in
-                    ObjectManager.Get<Obj_AI_Hero>()
-                        .Where(hero => hero.IsValidTarget() && hero.Distance(_player.Position) <= _bushwhack.Range)
+                    HeroManager.Enemies.Where(
+                        hero => hero.IsValidTarget() && hero.Distance(_player.Position) <= _bushwhack.Range)
                         .Select(target => _bushwhack.GetPrediction(target))
                         .Where(pred => pred.Hitchance == HitChance.Immobile))
                 {
@@ -719,12 +696,6 @@ namespace NidaleeTheBestialHuntress
 
             HumanSpellList.AddRange(new[] { _javelinToss, _bushwhack, _primalSurge });
             CougarSpellList.AddRange(new[] { _takedown, _pounce, _swipe });
-
-            var igniteslot = _player.Spellbook.GetSpell(ObjectManager.Player.GetSpellSlot("summonerdot")).Slot;
-            if (igniteslot != SpellSlot.Unknown)
-            {
-                Ignite = new Spell(igniteslot, 600);
-            }
 
             _javelinToss.SetSkillshot(0.125f, 40f, 1300f, true, SkillshotType.SkillshotLine);
             _bushwhack.SetSkillshot(0.50f, 100f, 1500f, false, SkillshotType.SkillshotCircle);
@@ -922,7 +893,6 @@ namespace NidaleeTheBestialHuntress
                             {
                                 hasSwitched = true;
                             }
-                            ;
                         }
                         if (!_player.IsCougar() && hasSwitched && _javelinToss.IsReady() &&
                             _javelinToss.GetPrediction(target).Hitchance >= CustomHitChance)

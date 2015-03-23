@@ -22,9 +22,8 @@ using SharpDX;
 
 namespace NidaleeTheBestialHuntress
 {
-    internal class VectorHelper
+    internal static class VectorHelper
     {
-        private static readonly Obj_AI_Hero Player = ObjectManager.Player;
 
         public static Vector2? GetFirstWallPoint(Vector3 from, Vector3 to, float step = 25)
         {
@@ -46,30 +45,6 @@ namespace NidaleeTheBestialHuntress
             }
 
             return null;
-        }
-
-        public static List<Obj_AI_Base> GetDashObjects(IEnumerable<Obj_AI_Base> predefinedObjectList = null)
-        {
-            List<Obj_AI_Base> objects;
-            if (predefinedObjectList != null)
-            {
-                objects = predefinedObjectList.ToList();
-            }
-            else
-            {
-                objects =
-                    ObjectManager.Get<Obj_AI_Base>().FindAll(o => o.IsValidTarget(Orbwalking.GetRealAutoAttackRange(o)));
-            }
-
-            var apexPoint = Player.ServerPosition.To2D() +
-                            (Player.ServerPosition.To2D() - Game.CursorPos.To2D()).Normalized() *
-                            Orbwalking.GetRealAutoAttackRange(Player);
-
-            return
-                objects.FindAll(
-                    o => IsLyingInCone(o.ServerPosition.To2D(), apexPoint, Player.ServerPosition.To2D(), Math.PI))
-                    .OrderBy(o => o.Distance(apexPoint, true))
-                    .ToList();
         }
 
         // Credits to furikuretsu from Stackoverflow (http://stackoverflow.com/a/10772759)
