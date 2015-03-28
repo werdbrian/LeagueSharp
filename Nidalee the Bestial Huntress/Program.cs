@@ -135,11 +135,11 @@ namespace NidaleeTheBestialHuntress
             var pounceDistance = target.IsHunted() ? 730 : _pounce.Range;
             if (_player.IsCougar())
             {
-                if (_menu.Item("useTakedown").GetValue<bool>() && _takedown.IsReady() &&
+                /*if (_menu.Item("useTakedown").GetValue<bool>() && _takedown.IsReady() &&
                     _player.Distance(target.Position) <= _takedown.Range)
                 {
                     _takedown.Cast(true);
-                }
+                }*/
 
                 if (_pounce.IsReady() && _menu.Item("usePounce").GetValue<bool>() &&
                     _player.Distance(target.ServerPosition) > _pounce.Range)
@@ -196,7 +196,8 @@ namespace NidaleeTheBestialHuntress
             else
             {
                 if (_menu.Item("useJavelin").GetValue<bool>() && _javelinToss.IsReady() &&
-                    target.IsValidTarget(_javelinToss.Range) && _player.Distance(target.Position) <= _javelinToss.Range)
+                    target.IsValidTarget(_javelinToss.Range) &&
+                    _player.Distance(target.Position) <= _menu.Item("javelinRange").GetValue<Slider>().Value)
                 {
                     _javelinToss.CastIfHitchanceEquals(target, CustomHitChance);
                 }
@@ -553,6 +554,8 @@ namespace NidaleeTheBestialHuntress
                 var humanMenu = new Menu("Human Spells", "human");
                 {
                     humanMenu.AddItem(new MenuItem("useJavelin", "Use Javelin (Q)").SetValue(true));
+                    humanMenu.AddItem(
+                        new MenuItem("javelinRange", "Javelin Range").SetValue(new Slider(1300, 500, 1500)));
                     humanMenu.AddItem(new MenuItem("useBushwhack", "Use Bushwhack (W)").SetValue(false));
                     humanMenu.AddItem(new MenuItem("useCougar", "Auto Transform to Cougar").SetValue(true));
                     combo.AddSubMenu(humanMenu);
@@ -772,9 +775,22 @@ namespace NidaleeTheBestialHuntress
             Game.OnUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             Obj_AI_Base.OnProcessSpellCast += OnSpellCast;
+            Orbwalking.OnAttack += OnAttack;
 
             ShowNotification("Nidalee by blacky & iJabba", Color.Crimson, 4000);
             ShowNotification("Heal & ManaManager by iJabba", Color.Crimson, 4000);
+        }
+
+        private static void OnAttack(AttackableUnit unit, AttackableUnit target)
+        {
+            var targetQ = target as Obj_AI_Hero;
+            if (unit.IsMe && _takedown.IsReady() && _menu.Item("useTakedown").GetValue<bool>() && _player.IsCougar())
+            {
+                if (targetQ.IsValidTarget())
+                {
+                    _takedown.Cast();
+                }
+            }
         }
 
         private static void OnSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -850,7 +866,7 @@ namespace NidaleeTheBestialHuntress
 
         #region calculations
 
-        public static bool IsCougar(this Obj_AI_Hero player)
+        private static bool IsCougar(this Obj_AI_Hero player)
         {
             return player.Spellbook.GetSpell(SpellSlot.Q).Name == "Takedown";
         }
@@ -909,7 +925,7 @@ namespace NidaleeTheBestialHuntress
             return (float) damage;
         }
 
-        public static List<Vector2> GetPointsInACircle(Vector2 center, int points, double radius)
+        private static List<Vector2> GetPointsInACircle(Vector2 center, int points, double radius)
         {
             var list = new List<Vector2>();
             var slice = 2 * Math.PI / points;
@@ -969,7 +985,7 @@ namespace NidaleeTheBestialHuntress
             SetSpellPosition(_pounce, new Vector3());
         }
 
-        public static void SetSpellPosition(this Spell spell, Vector3 position)
+        private static void SetSpellPosition(this Spell spell, Vector3 position)
         {
             if (position.IsValid())
             {
