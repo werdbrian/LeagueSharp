@@ -41,7 +41,7 @@ namespace NidaleeTheBestialHuntress
             }
             spell = GetHealingSpell();
 
-            Game.OnGameUpdate += OnGameUpdate;
+            Game.OnUpdate += OnGameUpdate;
         }
 
         /// <summary>
