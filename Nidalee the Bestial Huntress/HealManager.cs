@@ -143,13 +143,12 @@ namespace NidaleeTheBestialHuntress
                 return;
             }
 
-            var healthPercentage = _player.Health / _player.MaxHealth * 100;
             if (_player.IsRecalling() || _player.IsDead || _player.InFountain())
             {
                 return;
             }
 
-            if (!(healthPercentage < _menu.Item("healSelfPercent").GetValue<Slider>().Value))
+            if (!(_player.HealthPercentage() < _menu.Item("healSelfPercent").GetValue<Slider>().Value))
             {
                 return;
             }
@@ -210,16 +209,18 @@ namespace NidaleeTheBestialHuntress
             {
                 return;
             }
-
-            var allyHealthPercentage = selectedAlly.Health / selectedAlly.MaxHealth * 100;
-
-            if (!(allyHealthPercentage < _menu.Item("healAllyPercent").GetValue<Slider>().Value))
+            if (!(selectedAlly.HealthPercentage() < _menu.Item("healAllyPercent").GetValue<Slider>().Value))
             {
                 return;
             }
 
-            if (_player.Spellbook.GetSpell(SpellSlot.Q).Name == "Takedown")
-                return;
+            if (_player.ChampionName == "Nidalee")
+            {
+                if (_player.Spellbook.GetSpell(SpellSlot.Q).Name == "Takedown")
+                {
+                    return;
+                }
+            }
 
             if (spell.IsReady() && _player.Distance(selectedAlly.Position) < spell.Range)
             {

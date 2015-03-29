@@ -14,6 +14,7 @@
 // along with LeagueSharp.Common.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
 using SharpDX;
@@ -52,7 +53,7 @@ namespace NidaleeTheBestialHuntress
             if (Enabled)
             {
                 foreach (
-                    var unit in ObjectManager.Get<Obj_AI_Hero>().FindAll(u => u.IsValidTarget() && u.IsHPBarRendered))
+                    var unit in ObjectManager.Get<Obj_AI_Hero>().Where(u => u.IsValidTarget() && u.IsHPBarRendered))
                 {
                     // Get damage to unit
                     var damage = _damageToUnit(unit);
