@@ -35,13 +35,11 @@ namespace BlackZilean
             }
 
             //Define spells
-            _q = new Spell(SpellSlot.Q, 900);
+            _q = new Spell(SpellSlot.Q, 700);
             _w = new Spell(SpellSlot.W);
             _e = new Spell(SpellSlot.E, 700);
             _r = new Spell(SpellSlot.R, 900);
-            SpellList.AddRange(new[] { _q, _e });
-
-            _q.SetSkillshot(0.30f, 210f, 2000f, false, SkillshotType.SkillshotCircle);
+            SpellList.AddRange(new[] {_q, _e, _r});
 
             _igniteSlot = Player.GetSpellSlot("SummonerDot");
 
@@ -54,8 +52,8 @@ namespace BlackZilean
 
             // Print
             Game.PrintChat(
-                String.Format(
-                    "<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>{0} Loaded!</font>", ChampName));
+                String.Format("<font color='#08F5F8'>blacky -</font> <font color='#FFFFFF'>{0} Loaded!</font>",
+                    ChampName));
         }
 
         private static void Drawing_OnDraw(EventArgs args)
@@ -67,7 +65,7 @@ namespace BlackZilean
                 var circleEntry = Menu.Item("drawRange" + spell.Slot).GetValue<Circle>();
                 if (circleEntry.Active)
                 {
-                    Render.Circle.DrawCircle(Player.Position, spell.Range, circleEntry.Color);
+                    Utility.DrawCircle(Player.Position, spell.Range, circleEntry.Color);
                 }
             }
         }
@@ -84,7 +82,7 @@ namespace BlackZilean
 
             // Harass
             if (Menu.SubMenu("harass").Item("harassActive").GetValue<KeyBind>().Active &&
-                (ObjectManager.Player.Mana / ObjectManager.Player.MaxMana * 100) >
+                (ObjectManager.Player.Mana/ObjectManager.Player.MaxMana*100) >
                 Menu.Item("harassMana").GetValue<Slider>().Value)
             {
                 OnHarass(target);
@@ -92,7 +90,8 @@ namespace BlackZilean
 
             // WaveClear
             if (Menu.SubMenu("waveclear").Item("wcActive").GetValue<KeyBind>().Active &&
-                (Player.Mana / Player.MaxMana * 100) > Menu.Item("wcMana").GetValue<Slider>().Value)
+                (Player.Mana/Player.MaxMana*100) >
+                Menu.Item("wcMana").GetValue<Slider>().Value)
             {
                 WaveClear();
             }
@@ -106,7 +105,7 @@ namespace BlackZilean
             // Misc
             if (Menu.SubMenu("misc").Item("miscEscapeToMouse").GetValue<KeyBind>().Active)
             {
-                Flee();
+                EscapeToMouse();
             }
 
             // Killsteal
@@ -122,22 +121,22 @@ namespace BlackZilean
 
             if (useQ && Player.Distance(target.Position) < _q.Range)
             {
-                _q.Cast(target);
+                _q.Cast(target, Packets());
             }
 
             if (useW && !_q.IsReady())
             {
-                _w.Cast(Player);
+                _w.Cast(Player, Packets());
             }
 
             if (useE && Player.Distance(target.Position) < _e.Range)
             {
-                _e.Cast(target);
+                _e.Cast(target, Packets());
             }
 
             if (useE && Player.Distance(target.Position) > _e.Range)
             {
-                _e.Cast(Player);
+                _e.Cast(Player, Packets());
             }
 
             if (target == null || !Menu.Item("miscIgnite").GetValue<bool>() || _igniteSlot == SpellSlot.Unknown ||
@@ -160,12 +159,12 @@ namespace BlackZilean
 
             if (useQ && Player.Distance(target.Position) < _q.Range)
             {
-                _q.Cast(target);
+                _q.Cast(target, Packets());
             }
 
             if (useW && !_q.IsReady())
             {
-                _w.Cast(Player);
+                _w.Cast(Player, Packets());
             }
         }
 
@@ -184,13 +183,13 @@ namespace BlackZilean
             {
                 if (_q.IsKillable(target))
                 {
-                    _q.Cast(target);
+                    _q.Cast(target, Packets());
                 }
             }
 
             if (useW && !_q.IsReady())
             {
-                _w.Cast(Player);
+                _w.Cast(Player, Packets());
             }
         }
 
@@ -204,20 +203,21 @@ namespace BlackZilean
 
             if (useQ && allMinionsQ.Count > 2)
             {
-                foreach (var minion in allMinionsQ.Where(minion => minion.IsValidTarget() && _q.IsKillable(minion)))
+                foreach (var minion in allMinionsQ.Where(minion => minion.IsValidTarget() &&
+                                                                   _q.IsKillable(minion)))
                 {
-                    _q.CastOnUnit(minion);
+                    _q.CastOnUnit(minion, Packets());
                     return;
                 }
             }
 
             if (useW && !_q.IsReady())
             {
-                _w.Cast(Player);
+                _w.Cast(Player, Packets());
             }
 
-            var jcreeps = MinionManager.GetMinions(
-                Player.ServerPosition, _e.Range, MinionTypes.All, MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            var jcreeps = MinionManager.GetMinions(Player.ServerPosition, _e.Range, MinionTypes.All,
+                MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
             if (jcreeps.Count <= 0)
             {
                 return;
@@ -227,12 +227,12 @@ namespace BlackZilean
 
             if (useQ)
             {
-                _q.Cast(jcreep);
+                _q.Cast(jcreep, Packets());
             }
 
             if (useW && !_q.IsReady())
             {
-                _w.Cast(Player);
+                _w.Cast(Player, Packets());
             }
         }
 
@@ -246,28 +246,27 @@ namespace BlackZilean
             foreach (var aChamp in from aChamp in ObjectManager.Get<Obj_AI_Hero>()
                 where (aChamp.IsAlly) && (ObjectManager.Player.ServerPosition.Distance(aChamp.Position) < _r.Range)
                 where Menu.Item("Ult" + aChamp.BaseSkinName).GetValue<bool>() && _r.IsReady()
-                where aChamp.Health < (aChamp.MaxHealth * (Menu.Item("ultPercent").GetValue<Slider>().Value * 0.01))
+                where aChamp.Health < (aChamp.MaxHealth*(Menu.Item("ultPercent").GetValue<Slider>().Value*0.01))
                 where (!aChamp.IsDead) && (!aChamp.IsInvulnerable)
                 select aChamp)
             {
-                _r.CastOnUnit(aChamp);
+                _r.CastOnUnit(aChamp, Packets());
             }
         }
 
-        private static void Flee()
+        private static void EscapeToMouse()
         {
             var miscMenu = Menu.SubMenu("misc");
             var useE = miscMenu.Item("miscUseE").GetValue<bool>() && _e.IsReady();
 
-            if (_e.IsReady())
+            if (useE)
             {
                 Orbwalking.Orbwalk(null, Game.CursorPos);
-                _e.Cast(Player);
+                _e.Cast(Player, Packets());
             }
-
-            if (_w.IsReady())
+            else
             {
-                _w.Cast();
+                Orbwalking.Orbwalk(null, Game.CursorPos);
             }
         }
 
@@ -295,6 +294,11 @@ namespace BlackZilean
             }
 
             return (float) damage;
+        }
+
+        private static bool Packets()
+        {
+            return Menu.Item("miscPacket").GetValue<bool>();
         }
 
         private static void CreateMenu()
@@ -333,8 +337,7 @@ namespace BlackZilean
             waveclear.AddItem(new MenuItem("wcUseQ", "Use Q").SetValue(true));
             waveclear.AddItem(new MenuItem("wcUseW", "Use W").SetValue(true));
             waveclear.AddItem(new MenuItem("wcMana", "Mana to Waveclear").SetValue(new Slider(40, 100, 0)));
-            waveclear.AddItem(
-                new MenuItem("wcActive", "Waveclear active!").SetValue(new KeyBind('V', KeyBindType.Press)));
+            waveclear.AddItem(new MenuItem("wcActive", "Waveclear active!").SetValue(new KeyBind('V', KeyBindType.Press)));
 
             // Killsteal
             var killsteal = new Menu("Killsteal", "killsteal");
@@ -347,11 +350,10 @@ namespace BlackZilean
             Menu.AddSubMenu(ult);
             ult.AddItem(new MenuItem("ultUseR", "Use R on")).SetValue(true);
             ult.AddItem(new MenuItem("sep0", "========="));
-            foreach (var champ in ObjectManager.Get<Obj_AI_Hero>().Where(champ => champ.IsAlly))
+            foreach (var Champ in ObjectManager.Get<Obj_AI_Hero>().Where(champ => champ.IsAlly))
             {
                 ult.AddItem(
-                    new MenuItem("Ult" + champ.BaseSkinName, string.Format("Ult {0}", champ.BaseSkinName)).SetValue(
-                        true));
+                    new MenuItem("Ult" + Champ.BaseSkinName, string.Format("Ult {0}", Champ.BaseSkinName)).SetValue(true));
             }
             ult.AddItem(new MenuItem("sep1", "========="));
             ult.AddItem(new MenuItem("ultPercent", "R at % HP")).SetValue(new Slider(25, 1));
@@ -359,8 +361,11 @@ namespace BlackZilean
             // Misc
             var misc = new Menu("Misc", "misc");
             Menu.AddSubMenu(misc);
+            misc.AddItem(new MenuItem("miscPacket", "Use Packets").SetValue(true));
             misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
-            misc.AddItem(new MenuItem("miscEscapeToMouse", "Flee").SetValue(new KeyBind('G', KeyBindType.Press)));
+            misc.AddItem(
+                new MenuItem("miscEscapeToMouse", "Escape to mouse").SetValue(new KeyBind('G', KeyBindType.Press)));
+            misc.AddItem(new MenuItem("miscUseE", "Use E in escape to mouse").SetValue(true));
 
             //Damage after combo:
             var dmgAfterComboItem = new MenuItem("DamageAfterCombo", "Draw damage after combo").SetValue(true);
@@ -375,9 +380,9 @@ namespace BlackZilean
             // Drawings
             var drawings = new Menu("Drawings", "drawings");
             Menu.AddSubMenu(drawings);
-            drawings.AddItem(new MenuItem("drawRangeQ", "Q / R range").SetValue(new Circle(true, Color.Aquamarine)));
-            drawings.AddItem(new MenuItem("drawRangeE", "E range").SetValue(new Circle(false, Color.Aquamarine)));
-            //drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
+            drawings.AddItem(new MenuItem("drawRangeQ", "Q / E range").SetValue(new Circle(true, Color.Aquamarine)));
+            //drawings.AddItem(new MenuItem("drawRangeE", "E range").SetValue(new Circle(false, Color.Aquamarine)));
+            drawings.AddItem(new MenuItem("drawRangeR", "R range").SetValue(new Circle(false, Color.Aquamarine)));
             drawings.AddItem(dmgAfterComboItem);
 
             // Finalizing

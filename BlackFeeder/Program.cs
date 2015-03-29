@@ -44,8 +44,8 @@ namespace BlackFeeder
             _reviveSlot = Player.GetSpellSlot("SummonerRevive");
 
             // Register events
-            Game.OnUpdate += Game_OnGameUpdate;
-            Game.OnEnd += OnGameEnd;
+            Game.OnGameUpdate += Game_OnGameUpdate;
+            Game.OnGameEnd += OnGameEnd;
 
             // Print
             Game.PrintChat(

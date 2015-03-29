@@ -68,7 +68,7 @@ namespace BlackPoppy
                 var circleEntry = Menu.Item("drawRange" + spell.Slot).GetValue<Circle>();
                 if (circleEntry.Active)
                 {
-                    Utility.DrawCircle(Player.Position, spell.Range, circleEntry.Color);
+                    Render.Circle.DrawCircle(Player.Position, spell.Range, circleEntry.Color);
                 }
             }
         }
