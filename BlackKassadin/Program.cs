@@ -61,7 +61,7 @@ namespace BlackKassadin
             _nullSphere = new Spell(SpellSlot.Q, 650f);
             _netherBlade = new Spell(SpellSlot.W, 150f);
             _forcePulse = new Spell(SpellSlot.E, 400f);
-            _riftWalk = new Spell(SpellSlot.R, 450f);
+            _riftWalk = new Spell(SpellSlot.R, 500f);
 
             SpellList.AddRange(new[] { _nullSphere, _forcePulse, _riftWalk });
 
@@ -75,6 +75,7 @@ namespace BlackKassadin
 
             Game.OnUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
+            Interrupter2.OnInterruptableTarget += OnInterruptableSpell;
 
             ShowNotification("BlackKassadin by blacky - Loaded", System.Drawing.Color.Crimson, 4000);
             ShowNotification("ManaManager by iJabba", System.Drawing.Color.Crimson, 4000);
@@ -335,6 +336,18 @@ namespace BlackKassadin
 
         #endregion
 
+        #region Interrupt
+
+        private static void OnInterruptableSpell(Obj_AI_Hero unit, Interrupter2.InterruptableTargetEventArgs spell)
+        {
+            if (_menu.Item("inter").GetValue<bool>() && _nullSphere.IsReady() &&
+                _player.Distance(unit.Position) <= _nullSphere.Range)
+            {
+                _nullSphere.Cast(unit);
+            }
+        } 
+        #endregion
+
         #region CreateMenu
 
         private static void CreateMenu()
@@ -405,7 +418,7 @@ namespace BlackKassadin
 
             var misc = new Menu("Misc Options", "misc");
             {
-                //misc.AddItem(new MenuItem("miscIgnite", "Use Ignite").SetValue(true));
+                misc.AddItem(new MenuItem("inter", "Interrupt Spells with (Q)").SetValue(true));
                 misc.AddItem(new MenuItem("miscRiftWalkStacks", "Don't stack Rift Walk more than X"))
                     .SetValue(new Slider(3, 1, 4));
                 misc.AddItem(
