@@ -633,11 +633,10 @@ namespace NidaleeTheBestialHuntress
 
             var donationMenu = new Menu("Donating", "donations");
             {
-                donationMenu.AddItem(new MenuItem("kindword", "If you feel like supporting my work"));
-                donationMenu.AddItem(new MenuItem("kindword2", "Feel free to send a donation to: "));
-                donationMenu.AddItem(new MenuItem("kindword3", "iJava.i@hotmail.com"));
+                donationMenu.AddItem(new MenuItem("kindword", "If you feel like supporting our work"));
+                donationMenu.AddItem(new MenuItem("kindword2", "Feel free to send one of us a donation to: "));
+                donationMenu.AddItem(new MenuItem("kindword3", "blackykuroneko@gmail.com or iJava.i@hotmail.com"));
                 _menu.AddSubMenu(donationMenu);
-                //https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=F9A3B9JPQYTDJ
             }
 
             _menu.AddToMainMenu();
