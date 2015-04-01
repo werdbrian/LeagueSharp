@@ -1,9 +1,9 @@
 LeagueSharp
 ===========
 
-BlackZilean
+BlackFeeder
 
-- Simple Zilean Assembly
+- Best invention of mankind. Kappa
 
 ===========
 
@@ -20,16 +20,28 @@ BlackKassadin
 
 ===========
 
+BlackPoppy
+
+- Simple Poppy Assembly
+
+===========
+
 BlackWarwick
 
 - Simple Warwick Assembly
 
 ===========
 
-BlackPoppy
+BlackZilean
 
-- Simple Poppy Assembly
-- Credits to Kk2 because i reworked his Poppy.
+- Simple Warwick Assembly
+- Probably still outdated :s
+
+===========
+
+Nidalee the Bestial Huntress
+
+- Nidalee Assembly by me & iJabba
 
 ===========
 
