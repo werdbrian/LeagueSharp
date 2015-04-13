@@ -61,7 +61,7 @@ namespace BlackKassadin
             _nullSphere = new Spell(SpellSlot.Q, 650f);
             _netherBlade = new Spell(SpellSlot.W, 150f);
             _forcePulse = new Spell(SpellSlot.E, 400f);
-            _riftWalk = new Spell(SpellSlot.R, 500f);
+            _riftWalk = new Spell(SpellSlot.R, 600f);
 
             SpellList.AddRange(new[] { _nullSphere, _forcePulse, _riftWalk });
 
@@ -140,25 +140,25 @@ namespace BlackKassadin
         private static void OnCombo(Obj_AI_Hero target)
         {
             if (_menu.Item("useRiftWalk").GetValue<bool>() && _riftWalk.IsReady() &&
-                _player.Distance(target) <= _riftWalk.Range && target.IsValidTarget(_riftWalk.Range))
+                _player.Distance(target) <= _riftWalk.Range+50)
             {
                 _riftWalk.CastIfHitchanceEquals(target, CustomHitChance);
             }
 
             if (_menu.Item("useNetherBlade").GetValue<bool>() && _netherBlade.IsReady() &&
-                _player.Distance(target) <= _netherBlade.Range + 25)
+                _player.Distance(target) <= _netherBlade.Range + 50)
             {
                 _netherBlade.Cast();
             }
 
             if (_menu.Item("useNullSphere").GetValue<bool>() && _nullSphere.IsReady() &&
-                _player.Distance(target) <= _nullSphere.Range)
+                _player.Distance(target) <= _nullSphere.Range+50)
             {
                 _nullSphere.Cast(target);
             }
 
             if (_menu.Item("useForcePulse").GetValue<bool>() && _forcePulse.IsReady() &&
-                _player.Distance(target) <= _forcePulse.Range && target.IsValidTarget(_forcePulse.Range))
+                _player.Distance(target) <= _forcePulse.Range+50)
             {
                 _forcePulse.CastIfHitchanceEquals(target, CustomHitChance);
             }
@@ -177,14 +177,14 @@ namespace BlackKassadin
 
             var pred = _forcePulse.GetPrediction(target);
             if (_menu.Item("useForcePulseHarass").GetValue<bool>() && _forcePulse.IsReady() &&
-                target.IsValidTarget(_forcePulse.Range) && _player.Distance(target.Position) <= _forcePulse.Range &&
+                target.IsValidTarget(_forcePulse.Range) && _player.Distance(target.Position) <= _forcePulse.Range+25 &&
                 pred.Hitchance >= CustomHitChance)
             {
                 _forcePulse.Cast(pred.CastPosition);
             }
 
             if (_menu.Item("useNullSphereHarass").GetValue<bool>() && _nullSphere.IsReady() &&
-                _player.Distance(target.Position) <= _nullSphere.Range)
+                _player.Distance(target.Position) <= _nullSphere.Range+25)
             {
                 _nullSphere.Cast(target);
             }
