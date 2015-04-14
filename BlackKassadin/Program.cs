@@ -162,7 +162,7 @@ namespace BlackKassadin
             if (_menu.Item("useForcePulse").GetValue<bool>() && _forcePulse.IsReady() &&
                 _player.Distance(target) <= _forcePulse.Range+50)
             {
-                _forcePulse.CastIfHitchanceEquals(target, CustomHitChance);
+                _forcePulse.Cast(target.Position);
                  _netherBlade.Cast();
             }
         }
