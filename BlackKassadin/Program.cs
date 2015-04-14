@@ -143,6 +143,7 @@ namespace BlackKassadin
                 _player.Distance(target) <= _riftWalk.Range+50)
             {
                 _riftWalk.CastIfHitchanceEquals(target, CustomHitChance);
+                 _netherBlade.Cast();
             }
 
             if (_menu.Item("useNetherBlade").GetValue<bool>() && _netherBlade.IsReady() &&
@@ -155,12 +156,14 @@ namespace BlackKassadin
                 _player.Distance(target) <= _nullSphere.Range+50)
             {
                 _nullSphere.Cast(target);
+                 _netherBlade.Cast();
             }
 
             if (_menu.Item("useForcePulse").GetValue<bool>() && _forcePulse.IsReady() &&
                 _player.Distance(target) <= _forcePulse.Range+50)
             {
                 _forcePulse.CastIfHitchanceEquals(target, CustomHitChance);
+                 _netherBlade.Cast();
             }
         }
 
