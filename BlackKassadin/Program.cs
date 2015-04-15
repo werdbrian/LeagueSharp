@@ -316,7 +316,7 @@ namespace BlackKassadin
                 var riftWalkDmg = _player.GetSpellDamage(target, SpellSlot.R);
                 if (_menu.Item("killstealUseForcePulse").GetValue<bool>() && target.Health <= forcePulseDmg)
                 {
-                    _forcePulse.CastIfHitchanceEquals(target, CustomHitChance);
+                    _forcePulse.cast(target);
                 }
 
                 if (_menu.Item("killstealUseNullSphere").GetValue<bool>() && target.Health <= nullSphereDmg)
@@ -326,7 +326,7 @@ namespace BlackKassadin
 
                 if (_menu.Item("killstealUseRiftWalk").GetValue<bool>() && target.Health <= riftWalkDmg)
                 {
-                    _riftWalk.CastIfHitchanceEquals(target, CustomHitChance);
+                    _riftWalk.Cast(target);
                 }
             }
         }
