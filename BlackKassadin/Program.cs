@@ -115,7 +115,7 @@ namespace BlackKassadin
 
         private static void Game_OnGameUpdate(EventArgs args)
         {
-            var target = TargetSelector.GetTarget(_riftWalk.Range, TargetSelector.DamageType.Magical);
+            var target = TargetSelector.GetTarget(_riftWalk.Range+100, TargetSelector.DamageType.Magical);
 
             Killsteal();
 
