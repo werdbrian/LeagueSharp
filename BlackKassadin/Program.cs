@@ -72,7 +72,7 @@ namespace BlackKassadin
             _manaManager = new ManaManager();
 
             CreateMenu();
-
+            Orbwalking.AfterAttack += AfterAttack;
             Game.OnUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             Interrupter2.OnInterruptableTarget += OnInterruptableSpell;
@@ -98,7 +98,19 @@ namespace BlackKassadin
         }
 
         #endregion
-
+    private static void AfterAttack(AttackableUnit unit, AttackableUnit target)
+        {
+            switch (_orbwalker.ActiveMode)
+            {
+                case Orbwalking.OrbwalkingMode.Combo:
+                    if (unit.IsMe && _netherBlade.IsReady() && target is Obj_AI_Hero)
+                    {
+                        _netherBlade.Cast();
+                        Orbwalking.ResetAutoAttackTimer();
+                    }
+                break;
+            }
+        }
         #region OnGameUpdate
 
         private static void Game_OnGameUpdate(EventArgs args)
@@ -143,27 +155,27 @@ namespace BlackKassadin
                 _player.Distance(target) <= _riftWalk.Range+50)
             {
                 _riftWalk.CastIfHitchanceEquals(target, CustomHitChance);
-                 _netherBlade.Cast();
+             //    _netherBlade.Cast();
             }
 
-            if (_menu.Item("useNetherBlade").GetValue<bool>() && _netherBlade.IsReady() &&
+        /*    if (_menu.Item("useNetherBlade").GetValue<bool>() && _netherBlade.IsReady() &&
                 _player.Distance(target) <= _netherBlade.Range + 50)
             {
                 _netherBlade.Cast();
-            }
+            }*/
 
             if (_menu.Item("useNullSphere").GetValue<bool>() && _nullSphere.IsReady() &&
                 _player.Distance(target) <= _nullSphere.Range+50)
             {
                 _nullSphere.Cast(target);
-                 _netherBlade.Cast();
+                // _netherBlade.Cast();
             }
 
             if (_menu.Item("useForcePulse").GetValue<bool>() && _forcePulse.IsReady() &&
                 _player.Distance(target) <= _forcePulse.Range+50)
             {
                 _forcePulse.Cast(target.Position);
-                 _netherBlade.Cast();
+
             }
         }
 
@@ -183,14 +195,14 @@ namespace BlackKassadin
             && _player.Distance(target.Position) <= _forcePulse.Range+25 )
             {
                 _forcePulse.Cast(target.Position);
-                _netherBlade.Cast();
+               // _netherBlade.Cast();
             }
 
             if (_menu.Item("useNullSphereHarass").GetValue<bool>() && _nullSphere.IsReady() &&
                 _player.Distance(target.Position) <= _nullSphere.Range+25)
             {
                 _nullSphere.Cast(target);
-                _netherBlade.Cast();
+              //  _netherBlade.Cast();
             }
         }
 
@@ -216,11 +228,11 @@ namespace BlackKassadin
                 return;
             }
 
-            if (_menu.Item("useNullSphereWC").GetValue<bool>() && allMinionsQ.Count > 0 &&
+          /*  if (_menu.Item("useNullSphereWC").GetValue<bool>() && allMinionsQ.Count > 0 &&
                 allMinionsQ[0].IsValidTarget(_nullSphere.Range) && _nullSphere.IsReady())
             {
                 _nullSphere.Cast(allMinionsQ[0]);
-            }
+            }*/
 
             if (_menu.Item("useNetherBladeWC").GetValue<bool>() && allMinionsW.Count > 0 &&
                 allMinionsW[0].IsValidTarget(_netherBlade.Range) && _netherBlade.IsReady())
