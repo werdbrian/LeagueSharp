@@ -228,11 +228,11 @@ namespace BlackKassadin
                 return;
             }
 
-          /*  if (_menu.Item("useNullSphereWC").GetValue<bool>() && allMinionsQ.Count > 0 &&
+            if (_menu.Item("useNullSphereWC").GetValue<bool>() && allMinionsQ.Count > 0 &&
                 allMinionsQ[0].IsValidTarget(_nullSphere.Range) && _nullSphere.IsReady())
             {
                 _nullSphere.Cast(allMinionsQ[0]);
-            }*/
+            }
 
             if (_menu.Item("useNetherBladeWC").GetValue<bool>() && allMinionsW.Count > 0 &&
                 allMinionsW[0].IsValidTarget(_netherBlade.Range) && _netherBlade.IsReady())
