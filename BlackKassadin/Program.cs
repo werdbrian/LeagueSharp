@@ -58,9 +58,9 @@ namespace BlackKassadin
                 return;
             }
 
-            _nullSphere = new Spell(SpellSlot.Q, 600f);
+            _nullSphere = new Spell(SpellSlot.Q, 650f);
             _netherBlade = new Spell(SpellSlot.W, 150f);
-            _forcePulse = new Spell(SpellSlot.E, 650f);
+            _forcePulse = new Spell(SpellSlot.E, 700f);
             _riftWalk = new Spell(SpellSlot.R, 600f);
 
             SpellList.AddRange(new[] { _nullSphere, _forcePulse, _riftWalk });
