@@ -100,7 +100,7 @@ namespace BlackKassadin
         #endregion
     private static void AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
-            if (unit.IsMe && _netherBlade.IsReady() && target is Obj_AI_Hero)
+            if (unit.IsMe && _netherBlade.IsReady())
             {
                 _netherBlade.Cast();
                 Orbwalking.ResetAutoAttackTimer();
