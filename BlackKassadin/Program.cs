@@ -100,15 +100,11 @@ namespace BlackKassadin
         #endregion
     private static void AfterAttack(AttackableUnit unit, AttackableUnit target)
         {
-            switch (_orbwalker.ActiveMode)
+            if (unit.IsMe && _netherBlade.IsReady() && target is Obj_AI_Hero)
             {
-                case Orbwalking.OrbwalkingMode.Combo:
-                    if (unit.IsMe && _netherBlade.IsReady() && target is Obj_AI_Hero)
-                    {
-                        _netherBlade.Cast();
-                        Orbwalking.ResetAutoAttackTimer();
-                    }
-                break;
+                _netherBlade.Cast();
+                Orbwalking.ResetAutoAttackTimer();
+            }
             }
         }
         #region OnGameUpdate
@@ -155,20 +151,20 @@ namespace BlackKassadin
                 _player.Distance(target) <= _riftWalk.Range+50)
             {
                 _riftWalk.CastIfHitchanceEquals(target, CustomHitChance);
-             //    _netherBlade.Cast();
+                 _netherBlade.Cast();
             }
 
-        /*    if (_menu.Item("useNetherBlade").GetValue<bool>() && _netherBlade.IsReady() &&
+            if (_menu.Item("useNetherBlade").GetValue<bool>() && _netherBlade.IsReady() &&
                 _player.Distance(target) <= _netherBlade.Range + 50)
             {
                 _netherBlade.Cast();
-            }*/
+            }
 
             if (_menu.Item("useNullSphere").GetValue<bool>() && _nullSphere.IsReady() &&
                 _player.Distance(target) <= _nullSphere.Range+50)
             {
                 _nullSphere.Cast(target);
-                // _netherBlade.Cast();
+                 _netherBlade.Cast();
             }
 
             if (_menu.Item("useForcePulse").GetValue<bool>() && _forcePulse.IsReady() &&
