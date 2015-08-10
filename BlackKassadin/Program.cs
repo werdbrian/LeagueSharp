@@ -191,14 +191,14 @@ namespace BlackKassadin
             && _player.Distance(target.Position) <= _forcePulse.Range+25 )
             {
                 _forcePulse.Cast(target.Position);
-               // _netherBlade.Cast();
+               _netherBlade.Cast();
             }
 
             if (_menu.Item("useNullSphereHarass").GetValue<bool>() && _nullSphere.IsReady() &&
                 _player.Distance(target.Position) <= _nullSphere.Range+25)
             {
                 _nullSphere.Cast(target);
-              //  _netherBlade.Cast();
+                _netherBlade.Cast();
             }
         }
 
