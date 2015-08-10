@@ -105,7 +105,7 @@ namespace BlackKassadin
                 _netherBlade.Cast();
                 Orbwalking.ResetAutoAttackTimer();
             }
-            }
+            
         }
         #region OnGameUpdate
 
