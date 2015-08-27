@@ -495,5 +495,29 @@ namespace BlackKassadin
         }
 
         #endregion
+          private static float GetComboDamage(Obj_AI_Hero t)
+        {
+            var fComboDamage = 0f;
+
+            if (!t.IsValidTarget(4000))
+                return 0f;
+
+            fComboDamage += Q.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(t, SpellSlot.Q) : 0;
+            fComboDamage += W.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(t, SpellSlot.W) : 0;
+            fComboDamage += E.IsReady() ? (float) ObjectManager.Player.GetSpellDamage(t, SpellSlot.E) : 0;
+    
+            if (R.IsReady())
+            {
+                fComboDamage += (float) ObjectManager.Player.GetSpellDamage(t, SpellSlot.Q)*2;
+            }
+
+            fComboDamage +=  ObjectManager.Player.GetSpellSlot("SummonerDot") != SpellSlot.Unknown &&
+                            ObjectManager.Player.Spellbook.CanUseSpell( ObjectManager.Player.GetSpellSlot("SummonerDot")) == SpellState.Ready
+                ? (float) ObjectManager.Player.GetSummonerSpellDamage(t, Damage.SummonerSpell.Ignite)
+                : 0f;
+
+
+            return (float) fComboDamage;
+        }
     }
 }
