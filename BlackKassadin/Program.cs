@@ -508,7 +508,7 @@ namespace BlackKassadin
     
             if (R.IsReady())
             {
-                fComboDamage += (float) ObjectManager.Player.GetSpellDamage(t, SpellSlot.Q)*2;
+                fComboDamage += (float) ObjectManager.Player.GetSpellDamage(t, SpellSlot.R);
             }
 
             fComboDamage +=  ObjectManager.Player.GetSpellSlot("SummonerDot") != SpellSlot.Unknown &&
