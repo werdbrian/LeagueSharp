@@ -76,7 +76,8 @@ namespace BlackKassadin
             Game.OnUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             Interrupter2.OnInterruptableTarget += OnInterruptableSpell;
-
+            //Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
+            Utility.HpBarDamageIndicator.Enabled = true;
             ShowNotification("BlackKassadin by blacky - Loaded", System.Drawing.Color.Crimson, 4000);
             ShowNotification("ManaManager by iJabba", System.Drawing.Color.Crimson, 4000);
         }
